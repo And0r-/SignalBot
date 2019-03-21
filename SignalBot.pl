@@ -43,7 +43,7 @@ sub recive_messages {
 sub send_messages {
 	
 	foreach my $send_message (@send_messages) {
-		my $cmd = et_signal_cli_path().' -u '.get_bot_number().' send -m "'.$send_message->{message}.'" ';
+		my $cmd = get_signal_cli_path().' -u '.get_bot_number().' send -m "'.$send_message->{message}.'" ';
 		if (defined($send_message->{response_to}->{envelope}->{dataMessage}->{groupInfo}->{groupId})) {
 			$cmd .= '-g '.$send_message->{response_to}->{envelope}->{dataMessage}->{groupInfo}->{groupId};
 		} else {
@@ -72,10 +72,12 @@ sub check_moduls {
 
 sub modul_commands {
 	my $message = shift;
-	if ($message->{envelope}->{dataMessage}->{message} =~ m|^/bot (.*?) (.*)$|) {
-		command_send_pong($message) if ($1 eq 'ping');
-		command_send_statistic($message) if ($1 eq 'statistik');
-		command_set_event_time($message, $2) if ($1 eq 'eventtime');
+	if ($message->{envelope}->{dataMessage}->{message} =~ m|^/bot (.*)$|) {
+		my $commands = [split(" ", $1)];
+
+		command_send_pong($message, $commands) if ($commands->[0] eq 'ping');
+		command_send_statistic($message, $commands) if ($commands->[0] eq 'statistik');
+		command_set_event_time($message, $commands) if ($commands->[0] eq 'eventtime');
 	}
 }
 
@@ -90,15 +92,13 @@ sub modul_statistics {
 
 sub command_set_event_time {
 	my $message = shift;
-	my $time = shift;
+	my $options = shift;
 
 	return unless defined($message->{envelope}->{dataMessage}->{groupInfo}->{groupId});
 	
 	#@TODO: validate time :D
 
-	$event->{$time}->{$message->{envelope}->{dataMessage}->{groupInfo}->{groupId}};
-
-	
+	$event->{$options->[1]}->{$message->{envelope}->{dataMessage}->{groupInfo}->{groupId}};
 
 }
 
