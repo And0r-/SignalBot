@@ -4,12 +4,14 @@ use warnings;
 
 use JSON;
 use Data::Dumper;
+use Time::Piece;
 
 my $json = JSON->new->allow_nonref;
 
 
 my $statistic = {};
-my $event = {};
+my @events;
+my @events_backup;
 my @send_messages;
 
 require'./config.pl';
@@ -18,11 +20,25 @@ require'./config.pl';
 
 while (1==1) {
 
+	event_trigger();
 	send_messages();
 	recive_messages();
 
 }
 
+
+sub event_trigger {
+
+	my $t = gmtime;
+
+	foreach my $event_index (0 .. $#events) {
+		if ($t->epoch >= $events[$event_index]->{"time"}) {
+			warn "Event will start now, yeaaay";
+			push(@events_backup, $events[$event_index]);
+			delete $events[$event_index];
+		}
+	}
+} 
 
 sub recive_messages {
 	warn "recive message";
@@ -77,7 +93,7 @@ sub modul_commands {
 
 		command_send_pong($message, $commands) if ($commands->[0] eq 'ping');
 		command_send_statistic($message, $commands) if ($commands->[0] eq 'statistik');
-		command_set_event_time($message, $commands) if ($commands->[0] eq 'eventtime');
+		command_set_event_time($message, $commands) if ($commands->[0] eq 'event');
 	}
 }
 
@@ -93,17 +109,33 @@ sub modul_statistics {
 sub command_set_event_time {
 	my $message = shift;
 	my $options = shift;
+	# /bot event start 21.03.2019 13:33
+	warn "event erkannt...";
 
-	return unless defined($message->{envelope}->{dataMessage}->{groupInfo}->{groupId});
-	
+	# Feature is only working in groups
+	unless (defined($message->{envelope}->{dataMessage}->{groupInfo}->{groupId})) {
+		push(@send_messages, {message => "Events funktioniert leider nur im Gruppenchat...", response_to => $message});
+		return;
+	}
+
+
 	#@TODO: validate time :D
 
-	$event->{$options->[1]}->{$message->{envelope}->{dataMessage}->{groupInfo}->{groupId}};
+	# temporar injection fix 
+	unless (scalar(@{$options}) == 4 && $options->[1] =~ m/[a-z]{1,6}/ && $options->[2] =~ m/\d\d.\d\d.\d\d\d\d/ && $options->[3] =~ m/\d\d:\d\d/) {
+		push(@send_messages, {message=> "Event validation error :( nutze dieses format: /bot event start 21.03.2019 13:33", response_to =>$message});
+		return;
+	}
+
+
+	my $event_time = Time::Piece->strptime($options->[2]." ".$options->[3]." +0100", "%d.%m.%Y %H:%M %z");
+	warn "set event time: ".$event_time. " timestamp: ".$event_time->epoch;
+	push(@events, {time => $event_time->epoch, event => $options->[1], message => $message});
 
 }
 
 sub command_send_pong {
-	push(@send_messages, {message=> "pong", response_to =>shift});
+	push(@send_messages, {message=> "pong", response_to => shift});
 }
 
 sub command_send_statistic {
@@ -111,7 +143,7 @@ sub command_send_statistic {
 
 	# @TODO: format the message not only dump array :D
 	my $send_message = Data::Dumper::Dumper($statistic->{$message->{envelope}->{dataMessage}->{groupInfo}->{groupId}});
-	push(@send_messages, {message=> $send_message, response_to =>$message});
+	push(@send_messages, {message=> $send_message, response_to => $message});
 }
 
 # Dump of a recived message example from a test groupe
