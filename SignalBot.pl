@@ -29,13 +29,19 @@ while (1==1) {
 
 sub event_trigger {
 
-	my $t = gmtime;
+	my $t = localtime;
+	my $t_2h_reminder = localtime(time + 2*60*60);
 
 	foreach my $event_index (0 .. $#events) {
 		if ($t->epoch >= $events[$event_index]->{"time"}) {
 			warn "Event will start now, yeaaay";
+			push(@send_messages, {message => "Event Startet Jetzt", response_to => $events[$event_index]->{"message"}});
+
 			push(@events_backup, $events[$event_index]);
 			delete $events[$event_index];
+		} elsif ($t_2h_reminder->epoch >= $events[$event_index]->{"time"} && !$events[$event_index]->{"2h_reminder_done"}){
+			$events[$event_index]->{"2h_reminder_done"} = 1;
+			push(@send_messages, {message => "REMINDER: Event startet in 2 Stunden", response_to => $events[$event_index]->{"message"}});
 		}
 	}
 } 
@@ -70,11 +76,7 @@ sub send_messages {
 		
 	}
 
-
-
-
 	@send_messages  = ();
-
 }
 
 sub check_moduls {
