@@ -1,10 +1,54 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 use strict;
 use warnings;
 
 use JSON;
 use Data::Dumper;
 use Time::Piece;
+use POSIX;
+use File::Pid;
+
+# make "signalBot.log" file in /var/log/
+
+my $daemonName    = "signalBot";
+
+my $dieNow        = 0;                                     # used for "infinte loop" construct - allows daemon mode to gracefully exit
+my $logging       = 1;                                     # 1= logging is on
+my $logFilePath   = "/var/log/";                           # log file path
+my $logFile       = $logFilePath . $daemonName . ".log";
+my $pidFilePath   = "/var/run/";                           # PID file path
+my $pidFile       = $pidFilePath . $daemonName . ".pid";
+
+
+# daemonize
+use POSIX qw(setsid);
+chdir '/';
+umask 0;
+open STDIN,  '/dev/null'   or die "Can't read /dev/null: $!";
+open STDOUT, '>>/dev/null' or die "Can't write to /dev/null: $!";
+open STDERR, '>>/dev/null' or die "Can't write to /dev/null: $!";
+defined( my $pid = fork ) or die "Can't fork: $!";
+exit if $pid;
+ 
+# dissociate this process from the controlling terminal that started it and stop being part
+# of whatever process group this process was a part of.
+POSIX::setsid() or die "Can't start a new session.";
+ 
+# callback signal handler for signals.
+$SIG{INT} = $SIG{TERM} = $SIG{HUP} = \&signalHandler;
+$SIG{PIPE} = 'ignore';
+ 
+# create pid file in /var/run/
+my $pidfile = File::Pid->new( { file => $pidFile, } );
+ 
+$pidfile->write or die "Can't write PID file, /dev/null: $!";
+ 
+# turn on logging
+if ($logging) {
+	open LOG, ">>$logFile";
+	select((select(LOG), $|=1)[0]); # make the log file "hot" - turn off buffering
+}
+
 
 my $json = JSON->new->allow_nonref;
 
@@ -16,14 +60,39 @@ my @send_messages;
 
 require'./config.pl';
 
-
-
-while (1==1) {
+ 
+# "infinite" loop where some useful process happens
+until ($dieNow) {
+	
+ 
+	# Todo: persistent() the data on disk
 
 	event_trigger();
 	send_messages();
 	recive_messages();
-
+ 
+	# logEntry("log something"); # use this to log whatever you need to
+}
+ 
+# add a line to the log file
+sub logEntry {
+	my ($logText) = @_;
+	my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) = localtime(time);
+	my $dateTime = sprintf "%4d-%02d-%02d %02d:%02d:%02d", $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+	if ($logging) {
+		print LOG "$dateTime $logText\n";
+	}
+}
+ 
+# catch signals and end the program if one is caught.
+sub signalHandler {
+	$dieNow = 1;    # this will cause the "infinite loop" to exit
+}
+ 
+# do this stuff when exit() is called.
+END {
+	if ($logging) { close LOG }
+	$pidfile->remove if defined $pidfile;
 }
 
 
@@ -34,7 +103,6 @@ sub event_trigger {
 
 	foreach my $event_index (0 .. $#events) {
 		if ($t->epoch >= $events[$event_index]->{"time"}) {
-			warn "Event will start now, yeaaay";
 			push(@send_messages, {message => "Event Startet Jetzt", response_to => $events[$event_index]->{"message"}});
 
 			push(@events_backup, $events[$event_index]);
@@ -47,7 +115,7 @@ sub event_trigger {
 } 
 
 sub recive_messages {
-	warn "recive message";
+	logEntry("recive message");
 	my $cmd = get_signal_cli_path().' -u '.get_bot_number().' receive --json';
 	my $messages = `$cmd`;
 	return unless ($messages);
@@ -71,7 +139,7 @@ sub send_messages {
 		} else {
 			$cmd .= $send_message->{response_to}->{envelope}->{source};
 		}
-		warn "führe aus: ".$cmd;
+		logEntry("führe aus: ".$cmd);
 		my $output = `$cmd`;
 		
 	}
@@ -96,6 +164,7 @@ sub modul_commands {
 		command_send_pong($message, $commands) if ($commands->[0] eq 'ping');
 		command_send_statistic($message, $commands) if ($commands->[0] eq 'statistik');
 		command_set_event_time($message, $commands) if ($commands->[0] eq 'event');
+		command_help($message, $commands) if ($commands->[0] eq 'help');
 	}
 }
 
@@ -108,11 +177,35 @@ sub modul_statistics {
 	$statistic->{$message->{envelope}->{dataMessage}->{groupInfo}->{groupId}}->{$message->{envelope}->{source}}++;
 }
 
+sub command_help {
+	my $message = shift;
+	my $options = shift;
+
+
+	my $msg = '
+	Erstelle neuen Termin:
+	/bot event start 21.03.2019 13:33
+
+	Terminliste abruffen:
+	/bot event list
+
+	Prüffen ob bot lebt:
+	/bot ping
+
+	Statistik abruffen:
+	/bot statistik
+
+	Diese Hilfe abruffen:
+	/bot help
+	';
+	push(@send_messages, {message => $msg, response_to => $message});
+}
+
 sub command_set_event_time {
 	my $message = shift;
 	my $options = shift;
-	# /bot event start 21.03.2019 13:33
-	warn "event erkannt...";
+
+	# /bot event
 
 	# Feature is only working in groups
 	unless (defined($message->{envelope}->{dataMessage}->{groupInfo}->{groupId})) {
@@ -120,8 +213,15 @@ sub command_set_event_time {
 		return;
 	}
 
-
 	#@TODO: validate time :D
+
+	if (scalar(@{$options}) == 2 && $options->[1] eq "list") {
+		push(@send_messages, {message => "debug output:".Data::Dumper::Dumper(\@events), response_to => $message});
+		return;
+	}
+
+
+	# /bot event start 21.03.2019 13:33
 
 	# temporar injection fix 
 	unless (scalar(@{$options}) == 4 && $options->[1] =~ m/[a-z]{1,6}/ && $options->[2] =~ m/\d\d.\d\d.\d\d\d\d/ && $options->[3] =~ m/\d\d:\d\d/) {
@@ -131,7 +231,7 @@ sub command_set_event_time {
 
 
 	my $event_time = Time::Piece->strptime($options->[2]." ".$options->[3]." +0100", "%d.%m.%Y %H:%M %z");
-	warn "set event time: ".$event_time. " timestamp: ".$event_time->epoch;
+	logEntry("set event time: ".$event_time. " timestamp: ".$event_time->epoch);
 	push(@events, {time => $event_time->epoch, event => $options->[1], message => $message});
 
 }
