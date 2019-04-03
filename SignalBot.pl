@@ -8,27 +8,30 @@ use Time::Piece;
 use POSIX;
 use File::Pid;
 
+warn "start";
+
 # make "signalBot.log" file in /var/log/
 
 my $daemonName    = "signalBot";
 
 my $dieNow        = 0;                                     # used for "infinte loop" construct - allows daemon mode to gracefully exit
 my $logging       = 1;                                     # 1= logging is on
-my $logFilePath   = "/var/log/";                           # log file path
+my $logFilePath   = "log/";                           # log file path
 my $logFile       = $logFilePath . $daemonName . ".log";
-my $pidFilePath   = "/var/run/";                           # PID file path
+my $pidFilePath   = ".";                           # PID file path
 my $pidFile       = $pidFilePath . $daemonName . ".pid";
 
 
 # daemonize
 use POSIX qw(setsid);
-chdir '/';
+# chdir '/';
 umask 0;
 open STDIN,  '/dev/null'   or die "Can't read /dev/null: $!";
 open STDOUT, '>>/dev/null' or die "Can't write to /dev/null: $!";
-open STDERR, '>>/dev/null' or die "Can't write to /dev/null: $!";
+# open STDERR, '>>/dev/null' or die "Can't write to /dev/null: $!"; # Temporary disabled to debug
 defined( my $pid = fork ) or die "Can't fork: $!";
 exit if $pid;
+warn "ich bin der fork";
  
 # dissociate this process from the controlling terminal that started it and stop being part
 # of whatever process group this process was a part of.
@@ -118,6 +121,7 @@ sub recive_messages {
 	logEntry("recive message");
 	my $cmd = get_signal_cli_path().' -u '.get_bot_number().' receive --json';
 	my $messages = `$cmd`;
+	logEntry($messages);
 	return unless ($messages);
 	# Multiple messages are spitet by new line
 	foreach my $message (split(/\n/, $messages)) {
