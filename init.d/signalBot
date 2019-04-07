@@ -6,30 +6,30 @@ DIRECTORY=/home/andreas/SignalBot/
 NAME=signalBot
 DESC="signalBot um dinge im chat zu automatisieren"
 
-test -f $DAEMON || exit 0
+test -f $DIRECTORY$DAEMON || exit 0
 
 set -e
 
 case "$1" in
   start)
  echo -n "Starting $DESC: "
- start-stop-daemon --start --quiet -u andreas --pidfile $DIRECTORY.$NAME.pid \
+ start-stop-daemon --start --quiet -c andreas --chdir $DIRECTORY --pidfile $DIRECTORY.$NAME.pid \
   --exec /usr/bin/perl --startas $DIRECTORY$DAEMON
  echo "$NAME."
  ;;
   stop)
  echo -n "Stopping $DESC: "
  # --quiet
- start-stop-daemon --stop --signal 15 -u andreas--pidfile $DIRECTORY.$NAME.pid \
+ start-stop-daemon --stop --signal 15 -u andreas --chdir $DIRECTORY --pidfile $DIRECTORY.$NAME.pid \
   --exec /usr/bin/perl --startas $DIRECTORY.DAEMON
  echo "$NAME."
  ;;
   restart|force-reload)
  echo -n "Restarting $DESC: "
- start-stop-daemon --stop --quiet -u andreas --pidfile \
+ start-stop-daemon --stop --quiet -u andreas --chdir $DIRECTORY --pidfile \
   $DIRECTORY.$NAME.pid --exec /usr/bin/perl --startas $DIRECTORY$DAEMON
  sleep 1
- start-stop-daemon --start --quiet -u andreas --pidfile \
+ start-stop-daemon --start --quiet -c andreas --chdir $DIRECTORY --pidfile \
   $DIRECTORY.$NAME.pid --exec /usr/bin/perl --startas $DIRECTORY$DAEMON
  echo "$NAME."
  ;;
