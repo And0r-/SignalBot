@@ -14,6 +14,8 @@ require'./config.pl';
 require'./humhub.pl';
 require'./signal.pl';
 
+$SIG{INT} = $SIG{TERM} = $SIG{HUP} = \&signalHandler;
+
 
 my $dieNow        = 0;                                     # used for "infinte loop" construct - allows daemon mode to gracefully exit
 my $json = JSON->new->allow_nonref;
@@ -180,11 +182,11 @@ sub command_send_statistic {
 	add_signal_message($send_message, $message);
 }
 
-
-sub set_dieNow {
-	$dieNow = shift;
+ 
+# catch signals and end the program if one is caught.
+sub signalHandler {
+	$dieNow = 1;    # this will cause the "infinite loop" to exit
 }
-
 
 # Dump of a recived message example from a test groupe
 # $VAR1 = {

@@ -31,7 +31,7 @@ warn "ich bin der fork";
 POSIX::setsid() or die "Can't start a new session.";
  
 # callback signal handler for signals.
-$SIG{INT} = $SIG{TERM} = $SIG{HUP} = \&signalHandler;
+
 $SIG{PIPE} = 'ignore';
  
 # create pid file in /var/run/
@@ -42,17 +42,4 @@ $pidfile->write or die "Can't write PID file, /dev/null: $!";
 
 run_signalBot();
 
- 
-# catch signals and end the program if one is caught.
-sub signalHandler {
-	# Funktion wird in main gesucht und nicht in signalBot.pl
-	# Liegtwohl daran dass es ein Handler ist und etwas andere regeln gelten.
-	# @Todo zum funktionieren bringen. Im moment geht es auch ohne...
-	# set_dieNow(1);    # this will cause the "infinite loop" to exit
-}
- 
-# do this stuff when exit() is called.
-END {
-	$pidfile->remove if defined $pidfile;
-}
-
+$pidfile->remove if defined $pidfile;
