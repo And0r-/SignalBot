@@ -9,7 +9,7 @@ use POSIX;
 use File::Pid;
 
 
-
+require'./logger.pl';
 require'./config.pl';
 require'./humhub.pl';
 require'./signal.pl';
@@ -21,7 +21,6 @@ my $json = JSON->new->allow_nonref;
 my $statistic = {};
 my @events;
 my @events_backup;
-
 
 
 sub run_signalBot {
@@ -182,7 +181,9 @@ sub command_send_statistic {
 }
 
 
-
+sub set_dieNow {
+	$dieNow = shift;
+}
 
 
 # Dump of a recived message example from a test groupe
