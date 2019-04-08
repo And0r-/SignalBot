@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 require'./config.pl';
+require'./logger.pl';
 
 my @send_messages;
 
