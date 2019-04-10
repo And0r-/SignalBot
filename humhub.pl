@@ -3,9 +3,26 @@ use strict;
 use warnings;
 
 use LWP::UserAgent ();
+use DBI;
 
 
-# SELECT * FROM calendar_entry ce, content c, contentcontainer cc, space s  WHERE c.object_id = ce.id and c.object_model = 'humhub\\modules\\calendar\\models\\CalendarEntry' and c.contentcontainer_id = cc.id and cc.guid = s.guid and s.name = "Bot Post test"
+sub get_humhub_calendar {
+	my $dbh = DBI->connect(get_mysql_dns(), get_mysql_user(), get_mysql_pw());
+	$dbh->do("USE 19915268_firestorm_humhub;");
+
+ 	my $sql = 'SELECT ce.* FROM calendar_entry ce, content c, contentcontainer cc, space s  WHERE  c.object_id = ce.id and c.object_model = "humhub\\\\modules\\\\calendar\\\\models\\\\CalendarEntry" and c.contentcontainer_id = cc.id and cc.guid = s.guid and s.name = ?';
+
+    my $result = $dbh->selectall_hashref(
+        $sql
+        ,
+        'id',
+        undef,
+        ( "Bot Post test" ) );
+
+    return $result;
+
+}
+
 
 sub humhub_post {
 	my $msg = shift;
@@ -38,5 +55,10 @@ sub _humhub_extract_csrf_token {
 	shift() =~ m/\<meta name="csrf-token" content="(.*?)"\>/gi;
 	return $1;
 }
+
+
+
+
+
 
 1;

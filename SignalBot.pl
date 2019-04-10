@@ -14,10 +14,9 @@ require'./config.pl';
 require'./humhub.pl';
 require'./signal.pl';
 
-$SIG{INT} = $SIG{TERM} = $SIG{HUP} = \&signalHandler;
 
 
-my $dieNow        = 0;                                     # used for "infinte loop" construct - allows daemon mode to gracefully exit
+
 my $json = JSON->new->allow_nonref;
 
 my $statistic = {};
@@ -26,18 +25,15 @@ my @events_backup;
 
 
 sub run_signalBot {
-	 
-	# "infinite" loop where some useful process happens
-	until ($dieNow) {
-	 
 		# Todo: persistent() the data on disk
 
 		event_trigger();
 		send_messages();
 		recive_messages();
+
+		warn Data::Dumper::Dumper(get_humhub_calendar());
 	 
 		# logEntry("log something"); # use this to log whatever you need to
-	}
 }
  
  
@@ -163,8 +159,11 @@ sub command_set_event_time {
 		return;
 	}
 
+	# I don't know the timezone from the user... I need a timezone conzept...
+	# At the moment I use the system timezone
+	# Save it here as GTM and handle the timezone on the other places will be better in a international project
+	my $event_time = Time::Piece->strptime($options->[2]." ".$options->[3]." ".strftime("%z", localtime()), "%d.%m.%Y %H:%M %z");
 
-	my $event_time = Time::Piece->strptime($options->[2]." ".$options->[3]." +0100", "%d.%m.%Y %H:%M %z");
 	logEntry("set event time: ".$event_time. " timestamp: ".$event_time->epoch);
 	push(@events, {time => $event_time->epoch, event => $options->[1], message => $message});
 
@@ -182,11 +181,7 @@ sub command_send_statistic {
 	add_signal_message($send_message, $message);
 }
 
- 
-# catch signals and end the program if one is caught.
-sub signalHandler {
-	$dieNow = 1;    # this will cause the "infinite loop" to exit
-}
+
 
 # Dump of a recived message example from a test groupe
 # $VAR1 = {

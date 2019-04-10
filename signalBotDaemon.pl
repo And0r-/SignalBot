@@ -14,7 +14,6 @@ my $daemonName    = "signalBot";
 my $pidFilePath   = ".";                           # PID file path
 my $pidFile       = $pidFilePath . $daemonName . ".pid";
 
-
 # daemonize
 use POSIX qw(setsid);
 # chdir '/';
@@ -31,7 +30,7 @@ warn "ich bin der fork";
 POSIX::setsid() or die "Can't start a new session.";
  
 # callback signal handler for signals.
-
+$SIG{INT} = $SIG{TERM} = $SIG{HUP} = \&signalHandler;
 $SIG{PIPE} = 'ignore';
  
 # create pid file in /var/run/
@@ -39,7 +38,15 @@ my $pidfile = File::Pid->new( { file => $pidFile, } );
  
 $pidfile->write or die "Can't write PID file, /dev/null: $!";
  
+	# "infinite" loop where some useful process happens
+	until ($dieNow) {
+		run_signalBot();
+	}
 
-run_signalBot();
 
-$pidfile->remove if defined $pidfile;
+ # do this stuff when exit() is called.
+END {
+	$pidfile->remove if defined $pidfile;
+}
+
+
