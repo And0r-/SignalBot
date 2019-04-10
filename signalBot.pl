@@ -188,7 +188,7 @@ sub command_set_event_time {
 	if (scalar(@{$options}) == 2 && $options->[1] eq "list") {
 		my $events = "Events:\n";
 		foreach (@events) {
-			$events .= localtime($_->{start})->strftime('%F %T')." -> ".$_->{name}.'\n';
+			$events .= localtime($_->{start})->strftime('%d.%m.%Y %H:%M')." -> ".$_->{name}."\n";
 		}
 		add_signal_message($events, $message);
 		return;
