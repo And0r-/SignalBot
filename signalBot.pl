@@ -25,14 +25,16 @@ my @events_backup;
 
 
 sub run_signalBot {
-		# Todo: persistent() the data on disk
+	# Todo: persistent() the data on disk
 
-		event_trigger();
-		send_messages();
-		recive_messages();
+	mudul_humhub_event_import();
 
-	 
-		# logEntry("log something"); # use this to log whatever you need to
+	event_trigger();
+	send_messages();
+	recive_messages();
+
+ 
+	# logEntry("log something"); # use this to log whatever you need to
 }
  
  
@@ -72,7 +74,6 @@ sub recive_messages {
 sub check_moduls {
 	my $message = shift;
 
-	mudul_humhub_event_import();
 	modul_statistics($message);
 	modul_commands($message);
 }
