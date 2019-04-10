@@ -14,6 +14,8 @@ my $daemonName    = "signalBot";
 my $pidFilePath   = ".";                           # PID file path
 my $pidFile       = $pidFilePath . $daemonName . ".pid";
 
+my $dieNow;
+
 # daemonize
 use POSIX qw(setsid);
 # chdir '/';

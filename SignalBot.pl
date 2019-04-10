@@ -116,7 +116,6 @@ sub mudul_humhub_event_import {
 			logEntry("set event time: ".$event_time. " timestamp: ".$event_time->epoch);
 			push(@events, {time => $event_time->epoch, event => $entry->{description}, message => $fake_message});
 		}
-		
 	}
 
 }
