@@ -31,7 +31,6 @@ sub run_signalBot {
 		send_messages();
 		recive_messages();
 
-		warn Data::Dumper::Dumper(get_humhub_calendar());
 	 
 		# logEntry("log something"); # use this to log whatever you need to
 }
@@ -73,6 +72,7 @@ sub recive_messages {
 sub check_moduls {
 	my $message = shift;
 
+	mudul_humhub_event_import();
 	modul_statistics($message);
 	modul_commands($message);
 }
@@ -89,6 +89,36 @@ sub modul_commands {
 		command_help($message, $commands) if ($commands->[0] eq 'help');
 		command_humhub_post($message, $commands) if ($commands->[0] eq 'post');
 	}
+}
+
+sub mudul_humhub_event_import {
+
+	my $entrys = get_humhub_calendar();
+	
+	foreach my $entry (values %{$entrys}) {
+		# I don't know the timezone from the user... I need a timezone conzept...
+		# At the moment I use the system timezone
+		# Save it here as GTM and handle the timezone on the other places will be better in a international project
+		my $event_time = Time::Piece->strptime($entry->{start_datetime}." ".strftime("%z", localtime()), "%Y-%m-%d %H:%M:%S %z");
+
+		next if (localtime->epoch >= $event_time->epoch);
+
+		my $exist;
+		foreach (@events) {
+			if ($event_time->epoch == $_->{"time"}) {
+				$exist = 1;
+			}
+		}
+
+		unless ($exist) {
+			# Better to change to a object, or oly use groupId to answer... now i have to fake a lot, when i will add a event not from the chat :(
+			my $fake_message = $json->decode('{"envelope":{"source":"+41794183625","sourceDevice":1,"relay":null,"timestamp":1554337150370,"isReceipt":false,"dataMessage":{"timestamp":1554337150370,"message":"","expiresInSeconds":0,"attachments":[],"groupInfo":{"groupId":"MPDbbB4voiTqNDKlODYeww==","members":null,"name":null,"type":"DELIVER"}},"syncMessage":null,"callMessage":null}}');
+			logEntry("set event time: ".$event_time. " timestamp: ".$event_time->epoch);
+			push(@events, {time => $event_time->epoch, event => $entry->{description}, message => $fake_message});
+		}
+		
+	}
+
 }
 
 sub modul_statistics {
