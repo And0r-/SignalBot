@@ -21,7 +21,6 @@ my $json = JSON->new->allow_nonref;
 
 my $statistic = {};
 my @events;
-my @events_backup;
 
 
 sub run_signalBot {
@@ -43,15 +42,24 @@ sub event_trigger {
 	my $t = localtime;
 	my $t_2h_reminder = localtime(time + 2*60*60);
 
-	foreach my $event_index (0 .. $#events) {
-		if ($t->epoch >= $events[$event_index]->{"time"}) {
-			add_signal_message("Event Startet Jetzt", $events[$event_index]->{"message"});
+	# event Status:
+	# 1 noch nicht gestartet
+	# 2 angekündigt (remind)
+	# 3 gestartet
+	# 4 beendet
 
-			push(@events_backup, $events[$event_index]);
-			delete $events[$event_index];
-		} elsif ($t_2h_reminder->epoch >= $events[$event_index]->{"time"} && !$events[$event_index]->{"2h_reminder_done"}){
-			$events[$event_index]->{"2h_reminder_done"} = 1;
+	foreach my $event_index (0 .. $#events) {
+		if ($t->epoch >= $events[$event_index]->{"start"} and $events[$event_index]->{"status"} < 4) {
+			add_signal_message("Event endet Jetzt.", $events[$event_index]->{"message"});
+			$events[$event_index]->{"status"} = 4;
+
+		} elsif ($t->epoch >= $events[$event_index]->{"start"} and $events[$event_index]->{"status"} < 3) {
+			add_signal_message("Event startet Jetzt.", $events[$event_index]->{"message"});
+			$events[$event_index]->{"status"} = 3;
+
+		} elsif ($t_2h_reminder->epoch >= $events[$event_index]->{"start"} and $events[$event_index]->{"status"} < 2){
 			add_signal_message("REMINDER: Event startet in 2 Stunden", $events[$event_index]->{"message"});
+			$events[$event_index]->{"status"} = 2;
 		}
 	}
 } 
@@ -100,13 +108,14 @@ sub mudul_humhub_event_import {
 		# I don't know the timezone from the user... I need a timezone conzept...
 		# At the moment I use the system timezone
 		# Save it here as GTM and handle the timezone on the other places will be better in a international project
-		my $event_time = Time::Piece->strptime($entry->{start_datetime}." ".strftime("%z", localtime()), "%Y-%m-%d %H:%M:%S %z");
+		my $event_time_start = Time::Piece->strptime($entry->{start_datetime}." ".strftime("%z", localtime()), "%Y-%m-%d %H:%M:%S %z");
+		my $event_time_end = Time::Piece->strptime($entry->{end_datetime}." ".strftime("%z", localtime()), "%Y-%m-%d %H:%M:%S %z");
 
-		next if (localtime->epoch >= $event_time->epoch);
+		next if (localtime->epoch >= $event_time_start->epoch);
 
 		my $exist;
 		foreach (@events) {
-			if ($event_time->epoch == $_->{"time"}) {
+			if ($event_time_start->epoch == $_->{"start"}) {
 				$exist = 1;
 			}
 		}
@@ -114,8 +123,8 @@ sub mudul_humhub_event_import {
 		unless ($exist) {
 			# Better to change to a object, or oly use groupId to answer... now i have to fake a lot, when i will add a event not from the chat :(
 			my $fake_message = $json->decode('{"envelope":{"source":"+41794183625","sourceDevice":1,"relay":null,"timestamp":1554337150370,"isReceipt":false,"dataMessage":{"timestamp":1554337150370,"message":"","expiresInSeconds":0,"attachments":[],"groupInfo":{"groupId":"MPDbbB4voiTqNDKlODYeww==","members":null,"name":null,"type":"DELIVER"}},"syncMessage":null,"callMessage":null}}');
-			logEntry("set event time: ".$event_time. " timestamp: ".$event_time->epoch);
-			push(@events, {time => $event_time->epoch, event => $entry->{description}, message => $fake_message});
+			logEntry("set event time: ".$event_time_start. " timestamp: ".$event_time_start->epoch);
+			push(@events, {start => $event_time_start->epoch, end => $event_time_end, name => $entry->{description}, message => $fake_message});
 		}
 	}
 
@@ -195,7 +204,7 @@ sub command_set_event_time {
 	my $event_time = Time::Piece->strptime($options->[2]." ".$options->[3]." ".strftime("%z", localtime()), "%d.%m.%Y %H:%M %z");
 
 	logEntry("set event time: ".$event_time. " timestamp: ".$event_time->epoch);
-	push(@events, {time => $event_time->epoch, event => $options->[1], message => $message});
+	push(@events, {start => $event_time->epoch, end => $event_time->epoch + 2*60*60, name => $options->[1], message => $message});
 
 }
 
