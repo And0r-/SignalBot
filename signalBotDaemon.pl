@@ -40,11 +40,17 @@ my $pidfile = File::Pid->new( { file => $pidFile, } );
  
 $pidfile->write or die "Can't write PID file, /dev/null: $!";
  
-	# "infinite" loop where some useful process happens
-	until ($dieNow) {
-		run_signalBot();
-	}
+# "infinite" loop where some useful process happens
+until ($dieNow) {
+	run_signalBot();
+}
 
+
+# catch signals and end the program if one is caught.
+sub signalHandler {
+	$dieNow =1;    # this will cause the "infinite loop" to exit
+}
+ 
 
  # do this stuff when exit() is called.
 END {
