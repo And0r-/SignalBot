@@ -186,7 +186,11 @@ sub command_set_event_time {
 	#@TODO: validate time :D
 
 	if (scalar(@{$options}) == 2 && $options->[1] eq "list") {
-		add_signal_message("debug output:".Data::Dumper::Dumper(\@events), $message);
+		my $events = "Events:\n";
+		foreach (@events) {
+			$events .= localtime($_->{start})->strftime('%F %T')." -> ".$_->{name}.'\n';
+		}
+		add_signal_message($events, $message);
 		return;
 	}
 
