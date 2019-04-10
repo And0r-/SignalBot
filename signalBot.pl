@@ -43,13 +43,14 @@ sub event_trigger {
 	my $t_2h_reminder = localtime(time + 2*60*60);
 
 	# event Status:
+	# 0 importet
 	# 1 noch nicht gestartet
 	# 2 angekündigt (remind)
 	# 3 gestartet
 	# 4 beendet
 
 	foreach my $event_index (0 .. $#events) {
-		if ($t->epoch >= $events[$event_index]->{"start"} and $events[$event_index]->{"status"} < 4) {
+		if ($t->epoch >= $events[$event_index]->{"end"} and $events[$event_index]->{"status"} < 4) {
 			add_signal_message("Event endet Jetzt.", $events[$event_index]->{"message"});
 			$events[$event_index]->{"status"} = 4;
 
@@ -124,7 +125,7 @@ sub mudul_humhub_event_import {
 			# Better to change to a object, or oly use groupId to answer... now i have to fake a lot, when i will add a event not from the chat :(
 			my $fake_message = $json->decode('{"envelope":{"source":"+41794183625","sourceDevice":1,"relay":null,"timestamp":1554337150370,"isReceipt":false,"dataMessage":{"timestamp":1554337150370,"message":"","expiresInSeconds":0,"attachments":[],"groupInfo":{"groupId":"MPDbbB4voiTqNDKlODYeww==","members":null,"name":null,"type":"DELIVER"}},"syncMessage":null,"callMessage":null}}');
 			logEntry("set event time: ".$event_time_start. " timestamp: ".$event_time_start->epoch);
-			push(@events, {start => $event_time_start->epoch, end => $event_time_end, name => $entry->{description}, message => $fake_message});
+			push(@events, {start => $event_time_start->epoch, end => $event_time_end, name => $entry->{description}, status => 0, message => $fake_message});
 		}
 	}
 
@@ -204,7 +205,7 @@ sub command_set_event_time {
 	my $event_time = Time::Piece->strptime($options->[2]." ".$options->[3]." ".strftime("%z", localtime()), "%d.%m.%Y %H:%M %z");
 
 	logEntry("set event time: ".$event_time. " timestamp: ".$event_time->epoch);
-	push(@events, {start => $event_time->epoch, end => $event_time->epoch + 2*60*60, name => $options->[1], message => $message});
+	push(@events, {start => $event_time->epoch, end => $event_time->epoch + 2*60*60, status => 0, name => $options->[1], message => $message});
 
 }
 
