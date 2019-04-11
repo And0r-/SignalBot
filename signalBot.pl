@@ -224,7 +224,7 @@ sub command_send_statistic {
 	my $send_message = "";
 	my $groupeId = $message->{envelope}->{dataMessage}->{groupInfo}->{groupId};
 	foreach (keys %{$statistic->{$groupeId}}) {
-		$send_messages .= resolve_number($_). ": ".$statistic->{$groupeId}->{$_};
+		$send_message .= resolve_number($_). ": ".$statistic->{$groupeId}->{$_};
 	}
 	add_signal_message($send_message, $message);
 }
