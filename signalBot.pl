@@ -221,10 +221,21 @@ sub command_send_statistic {
 	my $message = shift;
 
 	# @TODO: format the message not only dump array :D
-	my $send_message = Data::Dumper::Dumper($statistic->{$message->{envelope}->{dataMessage}->{groupInfo}->{groupId}});
+	my $send_message = "";
+	forech (keys %{$statistic->{$message->{envelope}->{dataMessage}->{groupInfo}->{groupId}})} {
+		$send_messages .= resolve_number($_). ": ".$statistic->{$message->{envelope}->{dataMessage}->{groupInfo}->{groupId}}->{$_};
+	}
 	add_signal_message($send_message, $message);
 }
 
+
+sub resolve_number {
+	my $user = shift;
+	my $resolve_user = get_resolve_user();
+
+	$user = $resolve_user->{$user} if ($resolve_user->{$user});
+	return $user;
+}
 
 
 # Dump of a recived message example from a test groupe
