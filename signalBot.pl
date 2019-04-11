@@ -221,10 +221,10 @@ sub command_send_statistic {
 	my $message = shift;
 
 	# @TODO: format the message not only dump array :D
-	my $send_message = "";
+	my $send_message = "Geschriebene Nachrichten:\n";
 	my $groupeId = $message->{envelope}->{dataMessage}->{groupInfo}->{groupId};
 	foreach (keys %{$statistic->{$groupeId}}) {
-		$send_message .= resolve_number($_). ": ".$statistic->{$groupeId}->{$_};
+		$send_message .= resolve_number($_). ": ".$statistic->{$groupeId}->{$_}."\n";
 	}
 	add_signal_message($send_message, $message);
 }
