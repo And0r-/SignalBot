@@ -222,8 +222,9 @@ sub command_send_statistic {
 
 	# @TODO: format the message not only dump array :D
 	my $send_message = "";
-	forech (keys %{$statistic->{$message->{envelope}->{dataMessage}->{groupInfo}->{groupId}}}) {
-		$send_messages .= resolve_number($_). ": ".$statistic->{$message->{envelope}->{dataMessage}->{groupInfo}->{groupId}}->{$_};
+	my $groupeId = $message->{envelope}->{dataMessage}->{groupInfo}->{groupId};
+	foreach (keys %{$statistic->{$groupeId}}) {
+		$send_messages .= resolve_number($_). ": ".$statistic->{$groupeId}->{$_};
 	}
 	add_signal_message($send_message, $message);
 }
