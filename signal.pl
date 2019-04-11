@@ -32,7 +32,7 @@ sub recive_signal_messages {
 	logEntry("recive message");
 	return recive_signal_messages_debug() if (get_debug());
 	my $messages = "";
-	my $cmd = get_signal_cli_path().' -u '.get_bot_number().' receive --json';
+	my $cmd = get_signal_cli_path().' -u '.get_bot_number().' -t 3 receive --json';
 	$messages = exec_command($cmd);
 
 	return unless ($messages);
