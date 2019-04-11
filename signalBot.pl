@@ -125,7 +125,7 @@ sub mudul_humhub_event_import {
 			# Better to change to a object, or oly use groupId to answer... now i have to fake a lot, when i will add a event not from the chat :(
 			my $fake_message = $json->decode('{"envelope":{"source":"+41794183625","sourceDevice":1,"relay":null,"timestamp":1554337150370,"isReceipt":false,"dataMessage":{"timestamp":1554337150370,"message":"","expiresInSeconds":0,"attachments":[],"groupInfo":{"groupId":"MPDbbB4voiTqNDKlODYeww==","members":null,"name":null,"type":"DELIVER"}},"syncMessage":null,"callMessage":null}}');
 			logEntry("set event time: ".$event_time_start. " timestamp: ".$event_time_start->epoch);
-			push(@events, {start => $event_time_start->epoch, end => $event_time_end, name => $entry->{description}, status => 0, message => $fake_message});
+			push(@events, {start => $event_time_start->epoch, end => $event_time_end, name => $entry->{title}, status => 0, message => $fake_message});
 		}
 	}
 
