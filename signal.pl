@@ -35,6 +35,8 @@ sub recive_signal_messages {
 	my $cmd = get_signal_cli_path().' -u '.get_bot_number().' receive -t 3 --json';
 	$messages = exec_command($cmd);
 
+	logEntry("recive message done");
+
 	return unless ($messages);
 	# Multiple messages are spitet by new line
 
