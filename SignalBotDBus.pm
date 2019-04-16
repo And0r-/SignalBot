@@ -18,17 +18,17 @@ my $object = $hal->get_object(
 );
 
 
-$object->connect_to_signal('MessageReceived', sub
-{
-	$self->MessageReceived(@_);	
-});
-
-
-my $self->reactor = Net::DBus::Reactor->main();
-
 
 sub StartReactor {
 	my $self = shift;
+
+	$object->connect_to_signal('MessageReceived', sub
+	{
+		$self->MessageReceived(@_);	
+	});
+
+	my $reactor = Net::DBus::Reactor->main();
+	$self->reactor($reactor);
 	$self->reactor->run();
 }
 
