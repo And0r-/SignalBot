@@ -38,13 +38,13 @@ my $pidfile = File::Pid->new( { file => $pidFile, } );
  
 $pidfile->write or die "Can't write PID file, /dev/null: $!";
  my $SignalBot = SignalBotDBus->new();
-$SignalBot->DBusReactorStart();
+$SignalBot->StartReactor();
 
 
 
 # catch signals and end the program if one is caught.
 sub signalHandler {
-	$SignalBot->DBusReactorStop();    # this will cause the "infinite loop" to exit
+	$SignalBot->StopReactor();    # this will cause the "infinite loop" to exit
 }
  
 
