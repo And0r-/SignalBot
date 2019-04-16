@@ -5,7 +5,7 @@ use warnings;
 use POSIX;
 use File::Pid;
 
-use SignalBotDBusReactor;
+use SignalBotDBus;
 
 
 my $daemonName    = "signalBot";
@@ -37,14 +37,14 @@ $SIG{PIPE} = 'ignore';
 my $pidfile = File::Pid->new( { file => $pidFile, } );
  
 $pidfile->write or die "Can't write PID file, /dev/null: $!";
- 
-DBusReactorStart();
+ my $SignalBot = SignalBotDBus->new();
+$SignalBot->DBusReactorStart();
 
 
 
 # catch signals and end the program if one is caught.
 sub signalHandler {
-	DBusReactorStop();    # this will cause the "infinite loop" to exit
+	$SignalBot->DBusReactorStop();    # this will cause the "infinite loop" to exit
 }
  
 
