@@ -14,7 +14,6 @@ my $pidFilePath   = ".";                           # PID file path
 my $pidFile       = $pidFilePath . $daemonName . ".pid";
 
 
-
 # daemonize
 use POSIX qw(setsid);
 # chdir '/';

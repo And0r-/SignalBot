@@ -5,32 +5,175 @@ use lib '.';
 
 use Data::Dumper;
 use Mojo::Base -base;
+use Time::Piece;
+use POSIX;
+
+require'./logger.pl';
+require'./config.pl';
+
+has message => undef;
+has groupID => undef;
+has source => undef;
 
 
 my $i=0;
+
+
+my $statistic = {};
+my @events;
+
 
 
 sub MessageReceived {
 	my $self= shift;
 	warn Data::Dumper::Dumper(@_);
 	my $timestamp=shift;
-    my $source=shift;
-	my $groupID=shift;
-	my $message=shift;
+    $self->source(shift());
+	$self->groupID(shift());
+	$self->message(shift());
     my $attachments=shift;
-
-
-	warn $message;
-	# warn $object->getGroupName($groupID);
+	warn $self->message;
 
 	$i++;
 
 	warn $i;
-	$self->sendGroupMessage($message,undef,$groupID);
+	# $self->sendGroupMessage($message,undef,$groupID);
 
-	# $object->sendGroupMessage($i." | ".$message,undef,$groupID);
+	$self->check_moduls;
 
 	return;
+}
+
+sub check_moduls {
+	my $self = shift;
+
+	$self->modul_statistics;
+	$self->modul_commands;
+}
+
+sub modul_commands {
+	my $self = shift;
+	if ($self->message =~ m|^/bot (.*)$|) {
+		my $commands = [split(" ", $1)];
+
+		$self->command_send_pong($commands) if ($commands->[0] eq 'ping');
+		$self->command_send_statistic($commands) if ($commands->[0] eq 'statistik');
+		$self->command_set_event_time($commands) if ($commands->[0] eq 'event');
+		$self->command_help($commands) if ($commands->[0] eq 'help');
+		$self->command_humhub_post($commands) if ($commands->[0] eq 'post');
+	}
+}
+
+sub modul_statistics {
+	my $self = shift;
+
+	return unless defined($self->groupID);
+
+	$statistic->{$self->getGroupName}->{$self->source}++;
+	warn Data::Dumper::Dumper($statistic);
+}
+
+
+
+sub command_humhub_post {
+	my $self = shift;
+	my $options = shift;
+
+	# my $error = humhub_post("Message from Perl script. es funktioniert :) yeaaa");
+	# add_signal_message("Leider konnte der post nicht erstellt werden: $error", $message) unless $error;
+}
+
+sub command_help {
+	my $self = shift;
+	my $options = shift;
+
+
+	my $msg = '
+	Erstelle neuen Termin:
+	/bot event start 21.03.2019 13:33
+
+	Terminliste abruffen:
+	/bot event list
+
+	Prüffen ob bot lebt:
+	/bot ping
+
+	Statistik abruffen:
+	/bot statistik
+
+	Diese Hilfe abruffen:
+	/bot help
+	';
+	$self->sendGroupMessage($msg);
+}
+
+sub command_set_event_time {
+	my $self = shift;
+	my $options = shift;
+
+	# /bot event
+
+	# @TODO: Nach umwandlung der struktur macht das keinen sinn... send message to single user :D
+	# Feature is only working in groups
+	unless (defined($self->groupID)) {
+		$self->sendGroupMessage("Events funktioniert leider nur im Gruppenchat...");
+		return;
+	}
+
+	#@TODO: validate time :D
+
+	#@TODO: at the moment Events can not be set
+
+	if (scalar(@{$options}) == 2 && $options->[1] eq "list") {
+		my $events = "Events:\n";
+		foreach (@events) {
+			$events .= localtime($_->{start})->strftime('%d.%m.%Y %H:%M')." -> ".$_->{name}."\n";
+		}
+		$self->sendGroupMessage($events);
+		return;
+	}
+
+
+	# /bot event start 21.03.2019 13:33
+
+	# temporar injection fix 
+	unless (scalar(@{$options}) == 4 && $options->[1] =~ m/[a-z]{1,6}/ && $options->[2] =~ m/\d\d.\d\d.\d\d\d\d/ && $options->[3] =~ m/\d\d:\d\d/) {
+		$self->sendGroupMessage("Event validation error :( nutze dieses format: /bot event start 21.03.2019 13:33");
+		return;
+	}
+
+	# I don't know the timezone from the user... I need a timezone conzept...
+	# At the moment I use the system timezone
+	# Save it here as GTM and handle the timezone on the other places will be better in a international project
+	my $event_time = Time::Piece->strptime($options->[2]." ".$options->[3]." ".strftime("%z", localtime()), "%d.%m.%Y %H:%M %z");
+
+	logEntry("set event time: ".$event_time. " timestamp: ".$event_time->epoch);
+	push(@events, {start => $event_time->epoch, end => $event_time->epoch + 2*60*60, status => 0, name => $options->[1], message => $self->message});
+
+}
+
+sub command_send_pong {
+	shift()->sendGroupMessage("pong");
+}
+
+sub command_send_statistic {
+	my $self = shift;
+
+	# @TODO: format the message not only dump array :D
+	my $send_message = "Geschriebene Nachrichten:\n";
+	foreach (keys %{$statistic->{$self->getGroupName}}) {
+		$send_message .= resolve_number($_). ": ".$statistic->{$self->getGroupName}->{$_}."\n";
+	}
+	$self->sendGroupMessage($send_message);
+}
+
+
+sub resolve_number {
+	my $user = shift;
+	my $resolve_user = get_resolve_user();
+
+	$user = $resolve_user->{$user} if ($resolve_user->{$user});
+	return $user;
 }
 
 1;

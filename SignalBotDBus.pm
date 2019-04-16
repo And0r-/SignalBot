@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Net::DBus;
-use Data::Dumper;
 use Net::DBus::Reactor;
 use Mojo::Base 'SignalBot';
 
@@ -17,7 +16,6 @@ my $object = $hal->get_object(
     "/org/asamk/Signal",
     "org.asamk.Signal"
 );
-
 
 
 $object->connect_to_signal('MessageReceived', sub
@@ -42,10 +40,14 @@ sub StopReactor {
 
 sub sendGroupMessage {
 	my $self = shift;
-	my $message = shift;
-	my $groupID = shift;
-	$object->sendGroupMessage($message,undef,$groupID);
+	my $send_message = shift;
+	$object->sendGroupMessage($send_message,undef,$self->groupID);
 	return 1;
+}
+
+sub getGroupName {
+	my $self = shift;
+	return $object->getGroupName($self->groupID);
 }
 
 1;

@@ -50,4 +50,9 @@ sub sendGroupMessage {
 	warn "send message: ".shift;
 }
 
+sub getGroupName {
+	my $self = shift;
+	return "Debug group";
+}
+
 1;
