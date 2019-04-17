@@ -6,7 +6,7 @@ use Mojo::Base -base;
 
 has warnLogs => 0; # output all stuff as warn message
 has fileLogs => 1; # output all stuff in log/signalBot.log
-has signal_cli => 'debug'; # debug|dbus; debug will fake all signal stuff and read the messages from signal_input.txt
+has signal_cli => 'dbus'; # debug|dbus; debug will fake all signal stuff and read the messages from signal_input.txt
 
 has botNumber => '+123456789'; # Your signal tel nr.
 
