@@ -26,7 +26,7 @@ sub MessageReceived {
 	$self->message(shift());
     my $attachments=shift;
 
-	$self->logEntry("config test: ".$self->config->botNumber);
+	
 
 	$self->check_moduls;
 

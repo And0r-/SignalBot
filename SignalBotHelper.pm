@@ -7,9 +7,11 @@ use Mojo::Base -base;
 use SignalConfig;
 use LWP::UserAgent ();
 use DBI;
+use Timer;
 
 
 has config  => sub { SignalConfig->new };
+has timer => undef;
 has dbh => undef;
 has signal_cli => undef;
 
@@ -24,7 +26,7 @@ my $logFile       = $logFilePath . $daemonName . ".log";
 
 sub init {
 	my $self = shift;
-	$self->init_dbi->init_signal_cli;
+	$self->init_dbi->init_signal_cli->init_timer;
 	return $self;
 }
 
@@ -51,6 +53,12 @@ sub init_signal_cli {
 		$self->signal_cli(SignalCliDebug->new->signalBot($self));
 	}
 	# TODO: implementation via signal_cli system command
+	return $self;
+}
+
+sub init_timer {
+	my $self = shift;
+	$self->timer(Timer->new->signalBot($self));
 	return $self;
 }
 
