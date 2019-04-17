@@ -1,4 +1,27 @@
 #!/usr/bin/perl -w
+
+
+##################################################################################################################################
+##
+##	This will start the Signal Bot
+##	Use no param to start it with forks in background
+##
+##	Or You can use a param in development
+##	1 => starts the signal client listener with no fork
+##
+##	You can set "has signal_cli => 'debug';" in config file.
+##	so you can input signal messages in signal_input.txt and read outputs in terminal. 
+##
+##
+##	2 => starts the bot background worker to detect starting events and do all the stuff that is not signal message triggered
+##
+##
+##
+##
+##
+##################################################################################################################################
+
+
 use strict;
 use warnings;
 
@@ -13,17 +36,11 @@ my $debug = shift;
 
 if ($debug) {
 	# do not fork and output all stuff in terminal
-	SignalBot->new()->init->signal_cli->StartReactor;
-	
+	SignalBot->new->init->signal_cli->StartReactor;
 	exit;
 }
 
-
-my $daemonName    = "signalBot";
-
-my $pidFilePath   = ".";                           # PID file path
-my $pidFile       = $pidFilePath . $daemonName . ".pid";
-
+my $pidFile       = ".signalBot.pid";
 
 # daemonize
 use POSIX qw(setsid);
