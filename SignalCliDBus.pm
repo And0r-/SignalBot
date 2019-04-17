@@ -43,13 +43,13 @@ sub StopReactor {
 sub sendGroupMessage {
 	my $self = shift;
 	my $send_message = shift;
-	$object->sendGroupMessage($send_message,undef,$self->groupID);
+	$object->sendGroupMessage($send_message,undef,$self->signalBot->groupID);
 	return 1;
 }
 
 sub getGroupName {
 	my $self = shift;
-	return $object->getGroupName($self->groupID);
+	return $object->getGroupName($self->signalBot->groupID);
 }
 
 1;
