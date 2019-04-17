@@ -1,0 +1,33 @@
+package SignalConfig;
+use strict;
+use warnings;
+
+use Mojo::Base -base;
+
+has warnLogs => 0; # output all stuff as warn message
+has fileLogs => 1; # output all stuff in log/signalBot.log
+has signal_cli => 'debug'; # debug|dbus; debug will fake all signal stuff and read the messages from signal_input.txt
+
+has botNumber => '+123456789'; # Your signal tel nr.
+
+# Signal knows only the phone number, here you can resolve it to names (e.g. for statistics)
+has resolveUser => sub {
+		'+987654321' => "User1",		
+};
+
+
+has mysql_dns => 'dbi:mysql:mysql:127.0.0.1';
+has mysql_user => 'mysql_user';
+has mysql_pw => 'secret_mysql_pw';
+
+# Humhub modul
+has humhub_user => 'humhub_user';
+has humhub_pw => 'secret_humhub_pw';
+
+# Humhub API is very bad, for some stuff like read events in calendar it will be bether to do direct in db :(
+has humhub_mysql_dns => 'dbi:mysql:mysql:127.0.0.1';
+has humhub_mysql_user => 'humhub_mysql_user';
+has humhub_mysql_pw => 'secret_humhub_mysql_pw';
+
+
+1;
