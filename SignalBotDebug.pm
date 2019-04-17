@@ -4,13 +4,12 @@ use warnings;
 use lib '.';
 
 
-use Data::Dumper;
 use Mojo::Base 'SignalBot';
 
 
 use Exporter::Easy (OK => [ qw(DebugStart) ]);
 
-my $self = SignalBotDebug->new();
+my $self = SignalBotDebug->new->init_dbi;
 $self->DebugStart;
 
 sub DebugStart {

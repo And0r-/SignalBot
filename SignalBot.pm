@@ -1,22 +1,16 @@
 package SignalBot;
 use strict;
 use warnings;
-use lib '.';
 
 use Data::Dumper;
-use Mojo::Base -base;
+use Mojo::Base 'SignalBotHelper';
+
 use Time::Piece;
 use POSIX;
-
-require'./logger.pl';
-require'./config.pl';
 
 has message => undef;
 has groupID => undef;
 has source => undef;
-
-
-my $i=0;
 
 
 my $statistic = {};
@@ -26,18 +20,13 @@ my @events;
 
 sub MessageReceived {
 	my $self= shift;
-	warn Data::Dumper::Dumper(@_);
 	my $timestamp=shift;
     $self->source(shift());
 	$self->groupID(shift());
 	$self->message(shift());
     my $attachments=shift;
-	warn $self->message;
 
-	$i++;
-
-	warn $i;
-	# $self->sendGroupMessage($message,undef,$groupID);
+	$self->logEntry("config test: ".$self->config->botNumber);
 
 	$self->check_moduls;
 
@@ -70,7 +59,6 @@ sub modul_statistics {
 	return unless defined($self->groupID);
 
 	$statistic->{$self->getGroupName}->{$self->source}++;
-	warn Data::Dumper::Dumper($statistic);
 }
 
 
@@ -147,7 +135,7 @@ sub command_set_event_time {
 	# Save it here as GTM and handle the timezone on the other places will be better in a international project
 	my $event_time = Time::Piece->strptime($options->[2]." ".$options->[3]." ".strftime("%z", localtime()), "%d.%m.%Y %H:%M %z");
 
-	logEntry("set event time: ".$event_time. " timestamp: ".$event_time->epoch);
+	$self->logEntry("set event time: ".$event_time. " timestamp: ".$event_time->epoch);
 	push(@events, {start => $event_time->epoch, end => $event_time->epoch + 2*60*60, status => 0, name => $options->[1], message => $self->message});
 
 }
@@ -162,15 +150,16 @@ sub command_send_statistic {
 	# @TODO: format the message not only dump array :D
 	my $send_message = "Geschriebene Nachrichten:\n";
 	foreach (keys %{$statistic->{$self->getGroupName}}) {
-		$send_message .= resolve_number($_). ": ".$statistic->{$self->getGroupName}->{$_}."\n";
+		$send_message .= $self->resolve_number($_). ": ".$statistic->{$self->getGroupName}->{$_}."\n";
 	}
 	$self->sendGroupMessage($send_message);
 }
 
 
 sub resolve_number {
+	my $self = shift;
 	my $user = shift;
-	my $resolve_user = get_resolve_user();
+	my $resolve_user = $self->config->resolveUser;
 
 	$user = $resolve_user->{$user} if ($resolve_user->{$user});
 	return $user;
