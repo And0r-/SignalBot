@@ -12,7 +12,9 @@ has botNumber => '+123456789'; # Your signal tel nr.
 
 # Signal knows only the phone number, here you can resolve it to names (e.g. for statistics)
 has resolveUser => sub {
+	{
 		'+987654321' => "User1",		
+	}
 };
 
 
