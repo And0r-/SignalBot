@@ -13,7 +13,6 @@ has groupID => undef;
 has source => undef;
 
 
-my $statistic = {};
 my @events;
 
 
@@ -56,9 +55,18 @@ sub modul_commands {
 sub modul_statistics {
 	my $self = shift;
 
-	return unless defined($self->groupID);
-
-	$statistic->{$self->signal_cli->getGroupName}->{$self->source}++;
+	$self->dbh->do( "
+            INSERT
+                signalBot.statistic
+            SET
+                groupe = ?,
+                user = ?;
+        ", undef,
+        (
+            $self->signal_cli->getGroupName,
+            $self->source,
+        ),
+    );
 }
 
 
@@ -147,10 +155,26 @@ sub command_send_pong {
 sub command_send_statistic {
 	my $self = shift;
 
-	# @TODO: format the message not only dump array :D
+
+    
+    my $statistic =
+    $self->dbh->selectall_hashref( '
+            select user, count(user) as count from statistic where time>=? and time<=? and groupe = ? GROUP by user;
+        ',
+        'user',
+        undef,
+        (
+        	'2011-03-17 06:42:10',
+        	'2020-03-17 07:42:50',
+        	$self->signal_cli->getGroupName
+        ) 
+     );
+      
+
+    
 	my $send_message = "Geschriebene Nachrichten:\n";
-	foreach (keys %{$statistic->{$self->signal_cli->getGroupName}}) {
-		$send_message .= $self->resolve_number($_). ": ".$statistic->{$self->signal_cli->getGroupName}->{$_}."\n";
+	foreach (sort {$statistic->{$b}->{count} cmp $statistic->{$a}->{count}}keys %{$statistic}) {
+		$send_message .= $self->resolve_number($_). ": ".$statistic->{$_}->{count}."\n";
 	}
 	$self->signal_cli->sendGroupMessage($send_message);
 }

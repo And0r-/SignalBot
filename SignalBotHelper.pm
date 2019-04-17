@@ -33,7 +33,7 @@ sub init {
 sub init_dbi {
 	my $self = shift;
 	my $dbh = DBI->connect($self->config->mysql_dns, $self->config->mysql_user, $self->config->mysql_pw);
-	$dbh->do("USE 19915268_firestorm_humhub;");
+	$dbh->do("USE ".$self->config->mysql_db.";");
 	$dbh->do('SET NAMES \'utf8\'');
 	$dbh->do('SET CHARACTER SET \'utf8\'');
 	$dbh->{mysql_auto_reconnect} = 1;
