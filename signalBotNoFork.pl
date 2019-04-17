@@ -1,10 +1,12 @@
 #!/usr/bin/perl -w
 use strict;
 use warnings;
+use lib '.';
 
-require'./signalBot.pl';
+use SignalBot;
 
-run_signalBot();
+
+SignalBot->new()->init->signal_cli->StartReactor;
 
  
 

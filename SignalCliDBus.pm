@@ -1,10 +1,11 @@
-package SignalBotDBus;
+package SignalCliDBus;
 use strict;
 use warnings;
 
 use Net::DBus;
 use Net::DBus::Reactor;
-use Mojo::Base 'SignalBot';
+use Mojo::Base -base;
+
 
 has reactor => undef;
 

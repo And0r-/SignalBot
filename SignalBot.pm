@@ -58,7 +58,7 @@ sub modul_statistics {
 
 	return unless defined($self->groupID);
 
-	$statistic->{$self->getGroupName}->{$self->source}++;
+	$statistic->{$self->signal_cli->getGroupName}->{$self->source}++;
 }
 
 
@@ -92,7 +92,7 @@ sub command_help {
 	Diese Hilfe abruffen:
 	/bot help
 	';
-	$self->sendGroupMessage($msg);
+	$self->signal_cli->sendGroupMessage($msg);
 }
 
 sub command_set_event_time {
@@ -104,7 +104,7 @@ sub command_set_event_time {
 	# @TODO: Nach umwandlung der struktur macht das keinen sinn... send message to single user :D
 	# Feature is only working in groups
 	unless (defined($self->groupID)) {
-		$self->sendGroupMessage("Events funktioniert leider nur im Gruppenchat...");
+		$self->signal_cli->sendGroupMessage("Events funktioniert leider nur im Gruppenchat...");
 		return;
 	}
 
@@ -117,7 +117,7 @@ sub command_set_event_time {
 		foreach (@events) {
 			$events .= localtime($_->{start})->strftime('%d.%m.%Y %H:%M')." -> ".$_->{name}."\n";
 		}
-		$self->sendGroupMessage($events);
+		$self->signal_cli->sendGroupMessage($events);
 		return;
 	}
 
@@ -126,7 +126,7 @@ sub command_set_event_time {
 
 	# temporar injection fix 
 	unless (scalar(@{$options}) == 4 && $options->[1] =~ m/[a-z]{1,6}/ && $options->[2] =~ m/\d\d.\d\d.\d\d\d\d/ && $options->[3] =~ m/\d\d:\d\d/) {
-		$self->sendGroupMessage("Event validation error :( nutze dieses format: /bot event start 21.03.2019 13:33");
+		$self->signal_cli->sendGroupMessage("Event validation error :( nutze dieses format: /bot event start 21.03.2019 13:33");
 		return;
 	}
 
@@ -141,7 +141,7 @@ sub command_set_event_time {
 }
 
 sub command_send_pong {
-	shift()->sendGroupMessage("pong");
+	shift()->signal_cli->sendGroupMessage("pong");
 }
 
 sub command_send_statistic {
@@ -149,10 +149,10 @@ sub command_send_statistic {
 
 	# @TODO: format the message not only dump array :D
 	my $send_message = "Geschriebene Nachrichten:\n";
-	foreach (keys %{$statistic->{$self->getGroupName}}) {
-		$send_message .= $self->resolve_number($_). ": ".$statistic->{$self->getGroupName}->{$_}."\n";
+	foreach (keys %{$statistic->{$self->signal_cli->getGroupName}}) {
+		$send_message .= $self->resolve_number($_). ": ".$statistic->{$self->signal_cli->getGroupName}->{$_}."\n";
 	}
-	$self->sendGroupMessage($send_message);
+	$self->signal_cli->sendGroupMessage($send_message);
 }
 
 

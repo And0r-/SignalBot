@@ -1,20 +1,15 @@
-package SignalBotDebug;
+package SignalCliDebug;
 use strict;
 use warnings;
-use lib '.';
 
 
-use Mojo::Base 'SignalBot';
+use Mojo::Base -base;
 
+has dieNow => 0;
 
-use Exporter::Easy (OK => [ qw(DebugStart) ]);
-
-my $self = SignalBotDebug->new->init_dbi;
-$self->DebugStart;
-
-sub DebugStart {
+sub StartReactor {
 	my $self= shift;
-	while (1) {
+	while (!$self->dieNow) {
 		$self->recive_signal_messages_debug();
 	}
 }
@@ -43,6 +38,9 @@ sub recive_signal_messages_debug {
 	return 1;
 }
 
+sub StopReactor {
+	shift()->dieNow(1);
+}
 
 sub sendGroupMessage {
 	my $self=shift;
@@ -55,3 +53,4 @@ sub getGroupName {
 }
 
 1;
+

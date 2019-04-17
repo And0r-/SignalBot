@@ -11,6 +11,7 @@ use DBI;
 
 has config  => sub { SignalConfig->new };
 has dbh => undef;
+has signal_cli => undef;
 
 my $daemonName    = "signalBot";
 
@@ -20,8 +21,13 @@ my $logFilePath   = "log/";                           # log file path
 my $logFile       = $logFilePath . $daemonName . ".log";
 
 
-# CLAF... bether to load this automatic on creating the object. but i do not find a way to get acces there to the config...
-# @TODO das geht besser :)
+
+sub init {
+	my $self = shift;
+	$self->init_dbi->init_signal_cli;
+	return $self;
+}
+
 sub init_dbi {
 	my $self = shift;
 	my $dbh = DBI->connect($self->config->mysql_dns, $self->config->mysql_user, $self->config->mysql_pw);
@@ -30,6 +36,22 @@ sub init_dbi {
 	$dbh->do('SET CHARACTER SET \'utf8\'');
 	$dbh->{mysql_auto_reconnect} = 1;
 	$self->dbh($dbh);
+	return $self;
+}
+
+sub init_signal_cli {
+	my $self = shift;
+	# Switch Signal Client
+	# It is possible to use dbus or work with a fake input/output to test it local
+	if ($self->config->signal_cli eq "dbus") {
+		require SignalCliDBus;
+		$self->signal_cli(SignalCliDBus->new);
+	} else {
+		require SignalCliDebug;
+		$self->signal_cli(SignalCliDebug->new);
+	}
+	# TODO: implementation via signal_cli system command
+	return $self;
 }
 
 
