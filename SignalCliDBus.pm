@@ -8,6 +8,7 @@ use Mojo::Base -base;
 
 
 has reactor => undef;
+has signalBot => undef;
 
 
 my $bus = Net::DBus->system;
@@ -25,7 +26,7 @@ sub StartReactor {
 
 	$object->connect_to_signal('MessageReceived', sub
 	{
-		$self->MessageReceived(@_);	
+		$self->signalBot->MessageReceived(@_);	
 	});
 
 	my $reactor = Net::DBus::Reactor->main();
