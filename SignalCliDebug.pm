@@ -6,6 +6,7 @@ use warnings;
 use Mojo::Base -base;
 
 has dieNow => 0;
+has signalBot => undef;
 
 sub StartReactor {
 	my $self= shift;
@@ -28,7 +29,7 @@ sub recive_signal_messages_debug {
     	my $attachments=undef;
 		$messageFound=1;
 
-		$self->MessageReceived($timestamp,$source,$groupID,$message,$attachments);
+		$self->signalBot->MessageReceived($timestamp,$source,$groupID,$message,$attachments);
 	}
 	
 	truncate 'signal_input.txt', 0 if ($messageFound);

@@ -45,10 +45,10 @@ sub init_signal_cli {
 	# It is possible to use dbus or work with a fake input/output to test it local
 	if ($self->config->signal_cli eq "dbus") {
 		require SignalCliDBus;
-		$self->signal_cli(SignalCliDBus->new);
+		$self->signal_cli(SignalCliDBus->new->signalBot($self));
 	} else {
 		require SignalCliDebug;
-		$self->signal_cli(SignalCliDebug->new);
+		$self->signal_cli(SignalCliDebug->new->signalBot($self));
 	}
 	# TODO: implementation via signal_cli system command
 	return $self;

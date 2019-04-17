@@ -6,7 +6,17 @@ use lib '.';
 use POSIX;
 use File::Pid;
 
-use SignalBotDBus;
+use SignalBot;
+
+
+my $debug = shift;
+
+if ($debug) {
+	# do not fork and output all stuff in terminal
+	SignalBot->new()->init->signal_cli->StartReactor;
+	
+	exit;
+}
 
 
 my $daemonName    = "signalBot";
@@ -37,14 +47,14 @@ $SIG{PIPE} = 'ignore';
 my $pidfile = File::Pid->new( { file => $pidFile, } );
  
 $pidfile->write or die "Can't write PID file, /dev/null: $!";
- my $SignalBot = SignalBotDBus->new->init_dbi;
-$SignalBot->StartReactor;
+ my $SignalBot = SignalBot->new->init;
+$SignalBot->signal_cli->StartReactor;
 
 
 
 # catch signals and end the program if one is caught.
 sub signalHandler {
-	$SignalBot->StopReactor;    # this will cause the "infinite loop" to exit
+	$SignalBot->signal_cli->StopReactor;    # this will cause the "infinite loop" to exit
 }
  
 
