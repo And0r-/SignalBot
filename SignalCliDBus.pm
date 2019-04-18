@@ -6,6 +6,7 @@ use Net::DBus;
 use Net::DBus::Reactor;
 use Mojo::Base -base;
 use MIME::Base64;
+use Data::Dumper::Dumper;
 
 
 has reactor => undef;
@@ -44,6 +45,8 @@ sub StopReactor {
 sub sendGroupMessage {
 	my $self = shift;
 	my $send_message = shift;
+
+	$self->signalBot->logEntry("sende: ".$send_message." an gruppe: ".Data::Dumper::Dumper($self->signalBot->groupID));
 	$object->sendGroupMessage($send_message,undef,$self->signalBot->groupID);
 	return 1;
 }
