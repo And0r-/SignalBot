@@ -57,7 +57,7 @@ sub modul_statistics {
 
 	$self->dbh->do( "
             INSERT
-                signalBot.statistic
+                statistic
             SET
                 groupe = ?,
                 user = ?;
@@ -157,7 +157,7 @@ sub command_set_event_time {
 
 	$self->dbh->do("
             INSERT
-                signalBot.event
+                event
             SET
                 groupe = ?,
                 start_time = FROM_UNIXTIME(?),
