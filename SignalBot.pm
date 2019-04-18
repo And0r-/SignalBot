@@ -143,8 +143,24 @@ sub command_set_event_time {
 	# Save it here as GTM and handle the timezone on the other places will be better in a international project
 	my $event_time = Time::Piece->strptime($options->[2]." ".$options->[3]." ".strftime("%z", localtime()), "%d.%m.%Y %H:%M %z");
 
-	$self->logEntry("set event time: ".$event_time. " timestamp: ".$event_time->epoch);
-	push(@events, {start => $event_time->epoch, end => $event_time->epoch + 2*60*60, status => 0, name => $options->[1], message => $self->message});
+	$self->logEntry("create event: ".$event_time. " timestamp: ".$event_time->epoch);
+
+	$self->dbh->do("
+            INSERT
+                signalBot.event
+            SET
+                groupe = ?,
+                start_time = FROM_UNIXTIME(?),
+                end_time = FROM_UNIXTIME(?),
+                name = ?;
+        ", undef,
+        (
+            $self->signal_cli->getGroupName,
+            $event_time->epoch,
+            $event_time->epoch + 2*60*60,
+            $options->[1],
+        ),
+    );
 
 }
 
@@ -154,8 +170,6 @@ sub command_send_pong {
 
 sub command_send_statistic {
 	my $self = shift;
-
-
     
     my $statistic =
     $self->dbh->selectall_hashref( '
@@ -169,8 +183,6 @@ sub command_send_statistic {
         	$self->signal_cli->getGroupName
         ) 
      );
-      
-
     
 	my $send_message = "Geschriebene Nachrichten:\n";
 	foreach (sort {$statistic->{$b}->{count} cmp $statistic->{$a}->{count}}keys %{$statistic}) {
