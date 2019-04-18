@@ -14,6 +14,7 @@ sub start {
 
 	while (!$self->dieNow) {
 		$self->signalBot->logEntry("Timer looooop...");
+		$self->signalBot->mudul_humhub_event_import;
 
 		sleep(5);
 	}

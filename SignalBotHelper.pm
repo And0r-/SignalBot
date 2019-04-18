@@ -13,6 +13,7 @@ use Timer;
 has config  => sub { SignalConfig->new };
 has timer => undef;
 has dbh => undef;
+has dbh_humhub => undef;
 has signal_cli => undef;
 
 my $daemonName    = "signalBot";
@@ -26,7 +27,7 @@ my $logFile       = $logFilePath . $daemonName . ".log";
 
 sub init {
 	my $self = shift;
-	$self->init_dbi->init_signal_cli->init_timer;
+	$self->init_dbi->init_signal_cli->init_timer->init_dbi_humhub;
 	return $self;
 }
 
@@ -38,6 +39,17 @@ sub init_dbi {
 	$dbh->do('SET CHARACTER SET \'utf8\'');
 	$dbh->{mysql_auto_reconnect} = 1;
 	$self->dbh($dbh);
+	return $self;
+}
+
+sub init_dbi_humhub {
+	my $self = shift;
+	my $dbh = DBI->connect($self->config->humhub_mysql_dns, $self->config->humhub_mysql_user, $self->config->humhub_mysql_pw);
+	$dbh->do("USE ".$self->config->humhub_mysql_db.";");
+	$dbh->do('SET NAMES \'utf8\'');
+	$dbh->do('SET CHARACTER SET \'utf8\'');
+	$dbh->{mysql_auto_reconnect} = 1;
+	$self->dbh_humhub($dbh);
 	return $self;
 }
 

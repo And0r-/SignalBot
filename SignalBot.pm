@@ -174,6 +174,62 @@ sub command_set_event_time {
 
 }
 
+
+sub mudul_humhub_event_import {
+	my $self = shift;
+
+	my $entrys = $self->mysql_humhub_calendar();
+	
+	foreach my $entry (values %{$entrys}) {
+
+		# I don't know the timezone from the user... I need a timezone conzept...
+		# At the moment I use the system timezone
+		# Save it here as GTM and handle the timezone on the other places will be better in a international project
+		my $event_time_start = Time::Piece->strptime($entry->{start_datetime}." ".strftime("%z", localtime()), "%Y-%m-%d %H:%M:%S %z");
+		my $event_time_end = Time::Piece->strptime($entry->{end_datetime}." ".strftime("%z", localtime()), "%Y-%m-%d %H:%M:%S %z");
+
+		# do not import old events
+		next if (localtime->epoch >= $event_time_start->epoch);
+
+		# Better to change to a object, or oly use groupId to answer... now i have to fake a lot, when i will add a event not from the chat :(
+		$self->logEntry("set event time: ".$event_time_start. " timestamp: ".$event_time_start->epoch);
+
+		$self->dbh->do("
+            REPLACE INTO
+                event
+            SET
+                groupe = ?,
+                start_time = FROM_UNIXTIME(?),
+                end_time = FROM_UNIXTIME(?),
+                name = ?,
+                humhub_id = ?;
+	        ", undef,
+	        (
+	            "bot test gruppe",
+	            $event_time_start->epoch,
+	            $event_time_end->epoch,
+	            $entry->{title},
+	            $entry->{id}
+	        ),
+    	);
+	}
+}
+
+sub mysql_humhub_calendar {
+	my $self = shift;
+
+ 	my $sql = 'SELECT ce.* FROM calendar_entry ce, content c, contentcontainer cc, space s  WHERE  c.object_id = ce.id and c.object_model = "humhub\\\\modules\\\\calendar\\\\models\\\\CalendarEntry" and c.contentcontainer_id = cc.id and cc.guid = s.guid and s.name = ?';
+
+    my $result = $self->dbh_humhub->selectall_hashref(
+        $sql
+        ,
+        'id',
+        undef,
+        ( "Bot Post test" ) );
+
+    return $result;
+}
+
 sub command_send_pong {
 	shift()->signal_cli->sendGroupMessage("pong");
 }
