@@ -31,3 +31,8 @@ export:
 
 aliases:
 each bot command should be able with a alias. e.g. /^abc:/ instead of /bot export 
+
+
+to easy start/stop all services, add this to bash alias file:
+function s() { sudo /etc/init.d/signalBot $@; sudo /etc/init.d/signalBotTimer $@; }
+so you can use "s start" or "s stop"
