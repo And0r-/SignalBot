@@ -36,7 +36,7 @@ sub event_trigger {
 	my $t_2h_reminder = localtime(time + 2*60*60);
 
 	$self->signalBot->signal_cli->setGroupIDByName("bot test gruppe");
-	$self->signalBot->logEntry("groupe name: ".$self->signal_cli->getGroupName);
+	$self->signalBot->logEntry("groupe name: ".$self->signalBot->signal_cli->getGroupName);
 
 	$self->signalBot->logEntry("Reminder timestamp: ".$t_2h_reminder->epoch);
 	my $events = $self->signalBot->mysql_get_events;
