@@ -2,7 +2,7 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=start.pl
-SERVICE=timer
+DAEMON_OPTS=timer
 DIRECTORY=/home/andreas/SignalBot/
 NAME=signalBotTimer
 DESC="signalBotTimer check stuff like is a event starting"
@@ -15,7 +15,7 @@ case "$1" in
   start)
  echo -n "Starting $DESC: "
  start-stop-daemon --start --quiet -c andreas --chdir $DIRECTORY --pidfile $DIRECTORY.$NAME.pid \
-  --exec /usr/bin/perl --startas $DIRECTORY$DAEMON SERVICE
+  --exec /usr/bin/perl --startas $DIRECTORY$DAEMON $SERVICE
  echo "$NAME."
  ;;
   stop)
@@ -29,7 +29,7 @@ case "$1" in
  start-stop-daemon --stop --quiet -u andreas --pidfile $DIRECTORY.$NAME.pid
  sleep 1
  start-stop-daemon --start --quiet -c andreas --chdir $DIRECTORY --pidfile $DIRECTORY.$NAME.pid \
-  --exec /usr/bin/perl --startas $DIRECTORY$DAEMON SERVICE
+  --exec /usr/bin/perl --startas $DIRECTORY$DAEMON $SERVICE
  echo "$NAME."
  ;;
   *)
