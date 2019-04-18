@@ -1,7 +1,8 @@
 #! /bin/sh
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON="start.pl signalBot"
+DAEMON=start.pl
+SERVICE=signalBot
 DIRECTORY=/home/andreas/SignalBot/
 NAME=signalBot
 DESC="signalBot um dinge im chat zu automatisieren"
@@ -14,23 +15,21 @@ case "$1" in
   start)
  echo -n "Starting $DESC: "
  start-stop-daemon --start --quiet -c andreas --chdir $DIRECTORY --pidfile $DIRECTORY.$NAME.pid \
-  --exec /usr/bin/perl --startas $DIRECTORY$DAEMON
+  --exec /usr/bin/perl --startas $DIRECTORY$DAEMON SERVICE
  echo "$NAME."
  ;;
   stop)
  echo -n "Stopping $DESC: "
  # --quiet
- start-stop-daemon --stop --signal 15 -u andreas --chdir $DIRECTORY --pidfile $DIRECTORY.$NAME.pid \
-  --exec /usr/bin/perl --startas $DIRECTORY.DAEMON
+ start-stop-daemon --stop --signal 15 -u andreas --pidfile $DIRECTORY.$NAME.pid
  echo "$NAME."
  ;;
   restart|force-reload)
  echo -n "Restarting $DESC: "
- start-stop-daemon --stop --quiet -u andreas --chdir $DIRECTORY --pidfile \
-  $DIRECTORY.$NAME.pid --exec /usr/bin/perl --startas $DIRECTORY$DAEMON
+ start-stop-daemon --stop --quiet -u andreas --pidfile $DIRECTORY.$NAME.pid
  sleep 1
- start-stop-daemon --start --quiet -c andreas --chdir $DIRECTORY --pidfile \
-  $DIRECTORY.$NAME.pid --exec /usr/bin/perl --startas $DIRECTORY$DAEMON
+ start-stop-daemon --start --quiet -c andreas --chdir $DIRECTORY --pidfile $DIRECTORY.$NAME.pid \
+  --exec /usr/bin/perl --startas $DIRECTORY$DAEMON SERVICE
  echo "$NAME."
  ;;
   *)
