@@ -1,10 +1,10 @@
 #! /bin/sh
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON="start.pl signalBot"
+DAEMON="start.pl timer"
 DIRECTORY=/home/andreas/SignalBot/
-NAME=signalBot
-DESC="signalBot um dinge im chat zu automatisieren"
+NAME=signalBotTimer
+DESC="signalBotTimer check stuff like is a event starting"
 
 test -f $DIRECTORY$DAEMON || exit 0
 
