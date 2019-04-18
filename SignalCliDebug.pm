@@ -5,6 +5,8 @@ use warnings;
 
 use Mojo::Base -base;
 
+use MIME::Base64;
+
 has dieNow => 0;
 has signalBot => undef;
 
@@ -51,6 +53,14 @@ sub sendGroupMessage {
 sub getGroupName {
 	my $self = shift;
 	return "Debug group";
+}
+
+sub setGroupIDByName {
+	my $self = shift;
+	my $name = shift;
+
+	my @chars = split //, decode_base64($name);
+	$self->signalBot->groupID(map ord, @chars);
 }
 
 1;

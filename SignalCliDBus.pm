@@ -5,6 +5,7 @@ use warnings;
 use Net::DBus;
 use Net::DBus::Reactor;
 use Mojo::Base -base;
+use MIME::Base64;
 
 
 has reactor => undef;
@@ -50,6 +51,14 @@ sub sendGroupMessage {
 sub getGroupName {
 	my $self = shift;
 	return $object->getGroupName($self->signalBot->groupID);
+}
+
+sub setGroupIDByName {
+	my $self = shift;
+	my $name = shift;
+
+	my @chars = split //, decode_base64($name);
+	$self->signalBot->groupID(map ord, @chars);
 }
 
 1;

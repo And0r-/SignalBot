@@ -103,6 +103,7 @@ sub command_help {
 	$self->signal_cli->sendGroupMessage($msg);
 }
 
+# move to modul/event.pm
 sub command_set_event_time {
 	my $self = shift;
 	my $options = shift;
@@ -118,16 +119,7 @@ sub command_set_event_time {
 
 
 	if (scalar(@{$options}) == 2 && $options->[1] eq "list") {
-		my $events =
-	    $self->dbh->selectall_hashref( '
-	            select id, UNIX_TIMESTAMP(start_time) as start_time, UNIX_TIMESTAMP(end_time) as end_time, name from event where groupe = ? AND ((start_time >= NOW() - INTERVAL 2 DAY AND start_time  < NOW() + INTERVAL 14 DAY) OR start_time < NOW() AND end_time > NOW());
-	        ',
-	        'id',
-	        undef,
-	        (
-	        	$self->signal_cli->getGroupName
-	        ) 
-	     );
+		my $events = $self->mysql_get_events;
 
 
 
@@ -138,6 +130,9 @@ sub command_set_event_time {
 		$self->signal_cli->sendGroupMessage($events_msg);
 		return;
 	}
+
+
+
 
 
 	# /bot event start 21.03.2019 13:33
@@ -172,6 +167,20 @@ sub command_set_event_time {
         ),
     );
 
+}
+
+# move to modul/event.pm
+sub mysql_get_events {
+	my $self = shift;
+	return $self->dbh->selectall_hashref( '
+	            select id, UNIX_TIMESTAMP(start_time) as start_time, UNIX_TIMESTAMP(end_time) as end_time, name, status from event where groupe = ? AND ((start_time >= NOW() - INTERVAL 2 DAY AND start_time  < NOW() + INTERVAL 14 DAY) OR start_time < NOW() AND end_time > NOW());
+	        ',
+	        'id',
+	        undef,
+	        (
+	        	$self->signal_cli->getGroupName
+	        ) 
+	     );
 }
 
 
