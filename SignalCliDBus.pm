@@ -6,7 +6,7 @@ use Net::DBus;
 use Net::DBus::Reactor;
 use Mojo::Base -base;
 use MIME::Base64;
-use Data::Dumper::Dumper;
+use Data::Dumper;
 
 
 has reactor => undef;
