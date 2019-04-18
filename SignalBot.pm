@@ -116,16 +116,26 @@ sub command_set_event_time {
 		return;
 	}
 
-	#@TODO: validate time :D
-
-	#@TODO: at the moment Events can not be set
 
 	if (scalar(@{$options}) == 2 && $options->[1] eq "list") {
-		my $events = "Events:\n";
-		foreach (@events) {
-			$events .= localtime($_->{start})->strftime('%d.%m.%Y %H:%M')." -> ".$_->{name}."\n";
+		my $events =
+	    $self->dbh->selectall_hashref( '
+	            select id, UNIX_TIMESTAMP(start_time) as start_time, UNIX_TIMESTAMP(end_time) as end_time, name from event where groupe = ? AND ((start_time >= NOW() - INTERVAL 2 DAY AND start_time  < NOW() + INTERVAL 14 DAY) OR start_time < NOW() AND end_time > NOW());
+	        ',
+	        'id',
+	        undef,
+	        (
+	        	$self->signal_cli->getGroupName
+	        ) 
+	     );
+
+
+
+		my $events_msg = "Events der nächsten 14 Tage:\n";
+		foreach (values %{$events}) {
+			$events_msg .= localtime($_->{start_time})->strftime('%d.%m.%Y %H:%M')." - ".localtime($_->{end_time})->strftime('%d.%m.%Y %H:%M')." -> ".$_->{name}."\n";
 		}
-		$self->signal_cli->sendGroupMessage($events);
+		$self->signal_cli->sendGroupMessage($events_msg);
 		return;
 	}
 
