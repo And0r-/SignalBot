@@ -99,26 +99,6 @@ END {
 }
 
 
-
-
-
-sub getHumhubCalendar {
-	my $self = shift;
-
- 	my $sql = 'SELECT ce.* FROM calendar_entry ce, content c, contentcontainer cc, space s  WHERE  c.object_id = ce.id and c.object_model = "humhub\\\\modules\\\\calendar\\\\models\\\\CalendarEntry" and c.contentcontainer_id = cc.id and cc.guid = s.guid and s.name = ?';
-
-    my $result = $self->dbh->selectall_hashref(
-        $sql
-        ,
-        'id',
-        undef,
-        ( "Bot Post test" ) );
-
-    return $result;
-
-}
-
-
 sub humhub_post {
 	my $msg = shift;
 	# setup UserAgent
