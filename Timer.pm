@@ -28,12 +28,14 @@ sub stop {
 }
 
 
-
+# move to modul/event.pm
 sub event_trigger {
 	my $self = shift;
 
 	my $t = localtime;
 	my $t_2h_reminder = localtime(time + 2*60*60);
+
+	$self->signalBot->logEntry("Reminder timestamp: ".$t_2h_reminder->epoch);
 	my $events = $self->signalBot->mysql_get_events;
 
 	# event Status:
@@ -44,6 +46,7 @@ sub event_trigger {
 	# 4 beendet
 
 	foreach my $event (values %{$events}) {
+		$self->signalBot->logEntry("start time: ".$event->{"start_time"}. " status: ".$event->{"status"});
 		$self->signalBot->signal_cli->setGroupIDByName("bot test gruppe");
 		if ($t->epoch >= $event->{"end_time"} and $event->{"status"} < 4) {
 			$self->signalBot->signal_cli->sendGroupMessage("Event endet Jetzt.");
@@ -60,7 +63,7 @@ sub event_trigger {
 	}
 } 
 
-
+# move to modul/event.pm
 sub mysql_update_event_status {
 	my $self = shift;
 	my $event_id = shift;
