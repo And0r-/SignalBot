@@ -13,9 +13,6 @@ has groupID => undef;
 has source => undef;
 
 
-my @events;
-
-
 
 sub MessageReceived {
 	my $self= shift;
@@ -150,6 +147,7 @@ sub command_set_event_time {
 
 	$self->logEntry("create event: ".$event_time. " timestamp: ".$event_time->epoch);
 
+
 	$self->dbh->do("
             INSERT
                 event
@@ -183,11 +181,30 @@ sub mysql_get_events {
 	     );
 }
 
+# move to modul/event.pm and merge with mysql_get_events
+sub mysql_get_all_upcomming_events {
+	my $self = shift;
+	return $self->dbh->selectall_hashref( '
+	            select id, humhub_id, UNIX_TIMESTAMP(start_time) as start_time, UNIX_TIMESTAMP(end_time) as end_time, name, status from event where groupe = ? AND ((start_time >= NOW() - INTERVAL 2 DAY) OR start_time < NOW() AND end_time > NOW());
+	        ',
+	        'id',
+	        undef,
+	        (
+	        	$self->signal_cli->getGroupName
+	        ) 
+	     );
+}
 
 sub mudul_humhub_event_import {
 	my $self = shift;
 
-	my $entrys = $self->mysql_humhub_calendar();
+	my $entrys = $self->mysql_humhub_calendar;
+	my $events = $self->mysql_get_all_upcomming_events;
+
+	my $existing_events = {};
+	foreach (values %{$events}){
+		$existing_events->{$_->{start_time}.$_->{end_time}.$_->{name}.$_->{humhub_id}} = 1;
+	}
 	
 	foreach my $entry (values %{$entrys}) {
 
@@ -199,6 +216,10 @@ sub mudul_humhub_event_import {
 
 		# do not import old events
 		next if (localtime->epoch >= $event_time_start->epoch);
+
+		# Exist this event with exact the same data
+		next if (defined ($existing_events->{$event_time_start->epoch.$event_time_end->epoch.$entry->{title}.$entry->{id}}));
+
 
 		# Better to change to a object, or oly use groupId to answer... now i have to fake a lot, when i will add a event not from the chat :(
 		$self->logEntry("set event time: ".$event_time_start. " timestamp: ".$event_time_start->epoch);
@@ -227,7 +248,7 @@ sub mudul_humhub_event_import {
 sub mysql_humhub_calendar {
 	my $self = shift;
 
- 	my $sql = 'SELECT ce.* FROM calendar_entry ce, content c, contentcontainer cc, space s  WHERE  c.object_id = ce.id and c.object_model = "humhub\\\\modules\\\\calendar\\\\models\\\\CalendarEntry" and c.contentcontainer_id = cc.id and cc.guid = s.guid and s.name = ?';
+ 	my $sql = 'SELECT ce.* FROM calendar_entry ce, content c, contentcontainer cc, space s  WHERE  c.object_id = ce.id and c.object_model = "humhub\\\\modules\\\\calendar\\\\models\\\\CalendarEntry" and c.contentcontainer_id = cc.id and cc.guid = s.guid and s.name = ? AND ((start_datetime >= NOW() - INTERVAL 2 DAY) OR start_datetime < NOW() AND end_datetime > NOW())';
 
     my $result = $self->dbh_humhub->selectall_hashref(
         $sql

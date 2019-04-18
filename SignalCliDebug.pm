@@ -52,7 +52,7 @@ sub sendGroupMessage {
 
 sub getGroupName {
 	my $self = shift;
-	return "Debug group";
+	return "bot test gruppe";
 }
 
 sub setGroupIDByName {
