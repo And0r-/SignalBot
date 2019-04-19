@@ -247,7 +247,7 @@ sub mudul_humhub_event_import {
                 humhub_id = ?;
 	        ", undef,
 	        (
-	            $self->config->humhub_data->{$entry->{groupe}} || "", # reolve humhub space to chat group
+	            $self->config->humhub_data->{$entry->{space}} || "", # reolve humhub space to chat group
 	            $event_time_start->epoch,
 	            $event_time_end->epoch,
 	            $entry->{title},
@@ -260,14 +260,14 @@ sub mudul_humhub_event_import {
 sub mysql_humhub_calendar {
 	my $self = shift;
 
- 	my $sql = 'SELECT ce.* FROM calendar_entry ce, content c, contentcontainer cc, space s  WHERE  c.object_id = ce.id and c.object_model = "humhub\\\\modules\\\\calendar\\\\models\\\\CalendarEntry" and c.contentcontainer_id = cc.id and cc.guid = s.guid and s.name = ? AND ((start_datetime >= NOW() - INTERVAL 2 DAY) OR start_datetime < NOW() AND end_datetime > NOW())';
+ 	my $sql = 'SELECT ce.*, s.name as space FROM calendar_entry ce, content c, contentcontainer cc, space s  WHERE  c.object_id = ce.id and c.object_model = "humhub\\\\modules\\\\calendar\\\\models\\\\CalendarEntry" and c.contentcontainer_id = cc.id and cc.guid = s.guid AND ((start_datetime >= NOW() - INTERVAL 2 DAY) OR start_datetime < NOW() AND end_datetime > NOW())';
 
     my $result = $self->dbh_humhub->selectall_hashref(
         $sql
         ,
         'id',
         undef,
-        ( "Bot Post test" ) );
+        () );
 
     return $result;
 }
