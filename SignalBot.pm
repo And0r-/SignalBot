@@ -46,6 +46,7 @@ sub modul_commands {
 		$self->command_set_event_time($commands) if ($commands->[0] eq 'event');
 		$self->command_help($commands) if ($commands->[0] eq 'help');
 		$self->command_humhub_post($commands) if ($commands->[0] eq 'post');
+		$self->command_get_group_id($commands) if ($commands->[0] eq 'groupId');
 	}
 }
 
@@ -66,6 +67,13 @@ sub modul_statistics {
     );
 }
 
+
+sub command_get_group_id {
+	my $self = shift;
+	my $options = shift;
+
+	$self->signal_cli->sendGroupMessage(join(",", @{$self->groupID}));
+}
 
 
 sub command_humhub_post {
