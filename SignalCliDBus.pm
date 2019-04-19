@@ -72,7 +72,7 @@ sub setGroupIDByName {
 		$groups->{$self->getGroupName($_)} = $_;
 	}
 
-$self->signalBot->logEntry("groupe id: ".Data::Dumper::Dumper(\@groups));
+$self->signalBot->logEntry("groupe id: ".Data::Dumper::Dumper($groups));
 return [];
 	
 }
