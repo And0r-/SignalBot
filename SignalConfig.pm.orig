@@ -31,5 +31,11 @@ has humhub_mysql_dns => 'dbi:mysql:mysql:127.0.0.1';
 has humhub_mysql_user => 'humhub_mysql_user';
 has humhub_mysql_pw => 'secret_humhub_mysql_pw';
 
+has humhub_data => sub {
+	{
+			'Bot Post test' => {group => "bot test gruppe", messenger => "signal_cli"},		
+	}
+};
+
 
 1;

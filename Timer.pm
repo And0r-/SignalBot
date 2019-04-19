@@ -35,10 +35,7 @@ sub event_trigger {
 	my $t = localtime;
 	my $t_2h_reminder = localtime(time + 2*60*60);
 
-	$self->signalBot->signal_cli->setGroupIDByName("bot test gruppe");
-	$self->signalBot->logEntry("groupe name: ".$self->signalBot->signal_cli->getGroupName);
-
-	$self->signalBot->logEntry("Reminder timestamp: ".$t_2h_reminder->epoch);
+	
 	my $events = $self->signalBot->mysql_get_events;
 
 	# event Status:
@@ -49,7 +46,7 @@ sub event_trigger {
 	# 4 beendet
 
 	foreach my $event (values %{$events}) {
-		$self->signalBot->logEntry("start time: ".$event->{"start_time"}. " status: ".$event->{"status"});
+		$self->signalBot->signal_cli->setGroupIDByName($event->{groupe});
 		
 		if ($t->epoch >= $event->{"end_time"} and $event->{"status"} < 4) {
 			$self->signalBot->signal_cli->sendGroupMessage("Event endet Jetzt.");
