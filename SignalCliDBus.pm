@@ -68,7 +68,7 @@ sub setGroupIDByName {
 
 	my $groups = {};
 	my @groupIds = $object->getGroupIds();
-	foreach (@groupIds) {
+	foreach (@groupIds[0]) {
 		$groups->{$self->getGroupName($_)} = $_;
 	}
 
