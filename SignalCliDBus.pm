@@ -12,6 +12,8 @@ use Data::Dumper;
 has reactor => undef;
 has signalBot => undef;
 
+has groups => undef;
+
 
 my $bus = Net::DBus->system;
 my $hal = $bus->get_service("org.asamk.Signal");
@@ -20,6 +22,9 @@ my $object = $hal->get_object(
     "/org/asamk/Signal",
     "org.asamk.Signal"
 );
+
+
+
 
 
 
@@ -61,10 +66,13 @@ sub setGroupIDByName {
 	my $name = shift;
 
 
+	my $groups = {};
+	my @groupIds = $object->getGroupIds();
+	foreach (@groupIds) {
+		$groups->{$self->getGroupName($_)} = $_;
+	}
 
-	my @t = $object->getGroupIds();
-
-$self->signalBot->logEntry("groupe id: ".Data::Dumper::Dumper(\@t));
+$self->signalBot->logEntry("groupe id: ".Data::Dumper::Dumper(\@groups));
 return [];
 	
 }
