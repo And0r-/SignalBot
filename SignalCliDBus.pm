@@ -12,7 +12,7 @@ use Data::Dumper;
 has reactor => undef;
 has signalBot => undef;
 
-has groups => undef;
+has groups => sub {{}};
 
 
 my $bus = Net::DBus->system;
@@ -66,15 +66,27 @@ sub setGroupIDByName {
 	my $name = shift;
 
 
-	my $groups = {};
+	$self->signalBot->groupID($self->getGroupIdByName($name));
+	
+}
+
+sub getGroupIdByName {
+	my $self = shift;
+	my $name = shift;
+
+	my $groups = $self->groups;
+	return $groups->{$name} if (defined($groups->{$name}));
+
+	# Update known groups
+	$groups = {};
 	my @groupIds = $object->getGroupIds();
 	foreach (@{$groupIds[0]}) {
 		$groups->{$object->getGroupName($_)} = $_;
 	}
 
-$self->signalBot->logEntry("groupe id: ".Data::Dumper::Dumper($groups));
-return [];
-	
+	$self->groups($groups);
+	return $groups->{$name} if (defined($groups->{$name}));
+	return [];
 }
 
 1;
