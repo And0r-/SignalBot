@@ -232,6 +232,8 @@ sub mudul_humhub_event_import {
 		# Exist this event with exact the same data
 		next if (defined ($existing_events->{$event_time_start->epoch.$event_time_end->epoch.$entry->{title}.$entry->{id}}));
 
+		next unless ($self->resolve_humhub_space($entry->{space}));
+
 
 		# Better to change to a object, or oly use groupId to answer... now i have to fake a lot, when i will add a event not from the chat :(
 		$self->logEntry("set event time: ".$event_time_start. " timestamp: ".$event_time_start->epoch);
@@ -247,7 +249,7 @@ sub mudul_humhub_event_import {
                 humhub_id = ?;
 	        ", undef,
 	        (
-	            $self->config->humhub_data->{$entry->{space}} || "", # reolve humhub space to chat group
+	            $self->resolve_humhub_space($entry->{space}), # reolve humhub space to chat group
 	            $event_time_start->epoch,
 	            $event_time_end->epoch,
 	            $entry->{title},
@@ -255,6 +257,16 @@ sub mudul_humhub_event_import {
 	        ),
     	);
 	}
+}
+
+sub resolve_humhub_space {
+	my $self = shift;
+	my $space = shift;
+
+	unless (defined($self->config->humhub_data->{$space}->{group})) {
+		$self->logEntry("humhub Space konnte nicht aufgelöst werden: ".$space);
+	}
+	return $self->config->humhub_data->{$space}->{group};
 }
 
 sub mysql_humhub_calendar {
