@@ -185,7 +185,7 @@ sub mysql_get_events {
 sub mysql_get_all_upcomming_humhub_events {
 	my $self = shift;
 	return $self->dbh->selectall_hashref( '
-	            select id, humhub_id, UNIX_TIMESTAMP(start_time) as start_time, UNIX_TIMESTAMP(end_time) as end_time, name, status from event where groupe = ? AND ((start_time >= NOW() - INTERVAL 2 DAY) OR start_time < NOW() AND end_time > NOW() and humhub_id > 0);
+	            select id, humhub_id, UNIX_TIMESTAMP(start_time) as start_time, UNIX_TIMESTAMP(end_time) as end_time, name, status from event where groupe = ? AND humhub_id > 0 AND ((start_time >= NOW() - INTERVAL 2 DAY) OR start_time < NOW() AND end_time > NOW());
 	        ',
 	        'id',
 	        undef,
