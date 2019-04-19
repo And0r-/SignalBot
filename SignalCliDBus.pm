@@ -70,7 +70,9 @@ sub setGroupIDByName {
 	my @groupIds = $object->getGroupIds();
 	foreach (@{$groupIds[0]}) {
 		$self->signalBot->logEntry("single groupe id: ".Data::Dumper::Dumper($_));
-		$groups->{$self->getGroupName(@{$_})} = $_;
+		$self->signalBot->logEntry("group name with no cast array: ".$object->getGroupName($_));
+
+		$groups->{$object->getGroupName(@{$_})} = $_;
 	}
 
 $self->signalBot->logEntry("groupe id: ".Data::Dumper::Dumper($groups));
