@@ -185,12 +185,11 @@ sub mysql_get_events {
 sub mysql_get_all_upcomming_humhub_events {
 	my $self = shift;
 	return $self->dbh->selectall_hashref( '
-	            select id, humhub_id, UNIX_TIMESTAMP(start_time) as start_time, UNIX_TIMESTAMP(end_time) as end_time, name, status from event where groupe = ? AND humhub_id > 0 AND ((start_time >= NOW() - INTERVAL 2 DAY) OR start_time < NOW() AND end_time > NOW());
+	            select id, humhub_id, groupe, UNIX_TIMESTAMP(start_time) as start_time, UNIX_TIMESTAMP(end_time) as end_time, name, status from event where humhub_id > 0 AND ((start_time >= NOW() - INTERVAL 2 DAY) OR start_time < NOW() AND end_time > NOW());
 	        ',
 	        'id',
 	        undef,
 	        (
-	        	$self->signal_cli->getGroupName
 	        ) 
 	     );
 }
@@ -235,7 +234,7 @@ sub mudul_humhub_event_import {
                 humhub_id = ?;
 	        ", undef,
 	        (
-	            "bot test gruppe",
+	            $self->config->humhub_data->{$entry->{groupe}} || "", # reolve humhub space to chat group
 	            $event_time_start->epoch,
 	            $event_time_end->epoch,
 	            $entry->{title},
