@@ -6,6 +6,7 @@ use warnings;
 use Mojo::Base -base;
 
 use MIME::Base64;
+use Data::Dumper;
 
 has dieNow => 0;
 has signalBot => undef;
@@ -59,8 +60,48 @@ sub setGroupIDByName {
 	my $self = shift;
 	my $name = shift;
 
-	my @chars = split //, decode_base64($name);
-	$self->signalBot->groupID(map ord, @chars);
+	$self->signalBot->logEntry("groupe name: ".$name);
+
+
+
+
+	my @t = $self->signalBot->getGroups();
+
+$self->signalBot->logEntry("groupe id: ".Data::Dumper::Dumper(\@t));
+# 	my @chars = split //, $name;
+# 	my @groupId = map ord, @chars;
+# 	$self->signalBot->groupID(\@groupId);
+
+# 	$self->signalBot->logEntry("groupe id: ".Data::Dumper::Dumper(\@groupId));
+
+
+# 	my @string = map chr, @groupId;
+
+# 	$self->signalBot->logEntry("groupe id to chr: ".Data::Dumper::Dumper(\@string));
+
+
+# 	my $t = [
+#           48,
+#           240,
+#           219,
+#           108,
+#           30,
+#           47,
+#           162,
+#           36,
+#           234,
+#           52,
+#           50,
+#           165,
+#           56,
+#           54,
+#           30,
+#           195
+#         ];
+
+# my @string2 = map chr, @{$t};
+# $self->signalBot->logEntry("groupe id to chr2: ".Data::Dumper::Dumper(\@string2));
+
 }
 
 1;

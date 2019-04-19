@@ -60,8 +60,13 @@ sub setGroupIDByName {
 	my $self = shift;
 	my $name = shift;
 
-	my @chars = split //, decode_base64($name);
-	$self->signalBot->groupID(map ord, @chars);
+
+
+	my @t = $self->signalBot->getGroups();
+
+$self->signalBot->logEntry("groupe id: ".Data::Dumper::Dumper(\@t));
+return [];
+	
 }
 
 1;
