@@ -182,10 +182,10 @@ sub mysql_get_events {
 }
 
 # move to modul/event.pm and merge with mysql_get_events
-sub mysql_get_all_upcomming_events {
+sub mysql_get_all_upcomming_humhub_events {
 	my $self = shift;
 	return $self->dbh->selectall_hashref( '
-	            select id, humhub_id, UNIX_TIMESTAMP(start_time) as start_time, UNIX_TIMESTAMP(end_time) as end_time, name, status from event where groupe = ? AND ((start_time >= NOW() - INTERVAL 2 DAY) OR start_time < NOW() AND end_time > NOW());
+	            select id, humhub_id, UNIX_TIMESTAMP(start_time) as start_time, UNIX_TIMESTAMP(end_time) as end_time, name, status from event where groupe = ? AND ((start_time >= NOW() - INTERVAL 2 DAY) OR start_time < NOW() AND end_time > NOW() and humhub_id > 0);
 	        ',
 	        'id',
 	        undef,
@@ -199,7 +199,7 @@ sub mudul_humhub_event_import {
 	my $self = shift;
 
 	my $entrys = $self->mysql_humhub_calendar;
-	my $events = $self->mysql_get_all_upcomming_events;
+	my $events = $self->mysql_get_all_upcomming_humhub_events;
 
 	my $existing_events = {};
 	foreach (values %{$events}){

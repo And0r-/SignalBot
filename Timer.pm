@@ -53,7 +53,7 @@ sub event_trigger {
 		
 		if ($t->epoch >= $event->{"end_time"} and $event->{"status"} < 4) {
 			$self->signalBot->signal_cli->sendGroupMessage("Event endet Jetzt.");
-			$event->{"status"} = 4;
+			$self->mysql_update_event_status($event->{id},4);
 
 		} elsif ($t->epoch >= $event->{"start_time"} and $event->{"status"} < 3) {
 			$self->signalBot->signal_cli->sendGroupMessage("Event startet Jetzt.");
