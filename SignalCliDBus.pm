@@ -62,7 +62,7 @@ sub setGroupIDByName {
 
 
 
-	my @t = $self->signalBot->getGroupIds();
+	my @t = $object->getGroupIds();
 
 $self->signalBot->logEntry("groupe id: ".Data::Dumper::Dumper(\@t));
 return [];
